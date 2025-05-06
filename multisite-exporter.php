@@ -416,6 +416,30 @@ function me_exporter_history_page() {
 
 		if ( ! empty( $exports ) ) {
 			?>
+			<style>
+				.check-column {
+					width: 2.2em;
+					padding: 8px 10px !important;
+					vertical-align: middle !important;
+				}
+
+				#cb-select-all {
+					margin-left: 0;
+					vertical-align: middle;
+				}
+
+				input[name="selected_exports[]"] {
+					margin-left: 0;
+				}
+
+				.tablenav .actions {
+					padding: 2px 0;
+				}
+
+				.tablenav .button {
+					margin-right: 5px;
+				}
+			</style>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>" id="exports-form">
 				<input type="hidden" name="action" value="me_download_selected_exports">
 				<?php wp_nonce_field( 'download_selected_exports', 'me_download_nonce' ); ?>
@@ -445,7 +469,7 @@ function me_exporter_history_page() {
 						<?php
 						foreach ( $exports as $export ) {
 							echo '<tr>';
-							echo '<td><input type="checkbox" name="selected_exports[]" value="' . esc_attr( $export[ 'file_name' ] ) . '"></td>';
+							echo '<td class="check-column"><input type="checkbox" name="selected_exports[]" value="' . esc_attr( $export[ 'file_name' ] ) . '"></td>';
 							echo '<td>' . esc_html( $export[ 'blog_id' ] ) . '</td>';
 							echo '<td>' . esc_html( $export[ 'site_name' ] ) . '</td>';
 							echo '<td>' . esc_html( $export[ 'file_name' ] ) . '</td>';
