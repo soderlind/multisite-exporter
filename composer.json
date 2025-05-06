@@ -1,0 +1,22 @@
+{
+	"name": "soderlind/multisite-exporter",
+	"description": "Runs WordPress Exporter on each subsite in a multisite, in the background.",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0-or-later",
+	"authors": [
+		{
+			"name": "Per Søderlind",
+			"email": "email@example.com",
+			"homepage": "https://soderlind.no"
+		}
+	],
+	"require": {
+		"php": ">=7.2",
+		"woocommerce/action-scheduler": "^3.5"
+	},
+	"config": {
+		"allow-plugins": {
+			"composer/installers": true
+		}
+	}
+}
