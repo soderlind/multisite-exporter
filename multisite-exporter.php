@@ -415,39 +415,89 @@ function me_exporter_history_page() {
 		$exports = get_site_transient( 'multisite_exports' );
 
 		if ( ! empty( $exports ) ) {
-			echo '<table class="widefat fixed" style="margin-top: 20px;">';
-			echo '<thead><tr>';
-			echo '<th>Blog ID</th>';
-			echo '<th>Site Name</th>';
-			echo '<th>Export File</th>';
-			echo '<th>Date</th>';
-			echo '<th>Actions</th>';
-			echo '</tr></thead>';
-			echo '<tbody>';
+			?>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>" id="exports-form">
+				<input type="hidden" name="action" value="me_download_selected_exports">
+				<?php wp_nonce_field( 'download_selected_exports', 'me_download_nonce' ); ?>
 
-			foreach ( $exports as $export ) {
-				echo '<tr>';
-				echo '<td>' . esc_html( $export[ 'blog_id' ] ) . '</td>';
-				echo '<td>' . esc_html( $export[ 'site_name' ] ) . '</td>';
-				echo '<td>' . esc_html( $export[ 'file_name' ] ) . '</td>';
-				echo '<td>' . esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $export[ 'date' ] ) ) ) . '</td>';
-				echo '<td>';
+				<div class="tablenav top">
+					<div class="alignleft actions bulkactions">
+						<input type="submit" id="doaction" class="button action" value="Download Selected">
+					</div>
+					<div class="alignleft actions">
+						<a href="#" class="button" id="select-all">Select All</a>
+						<a href="#" class="button" id="deselect-all">Deselect All</a>
+					</div>
+				</div>
 
-				// Create a download URL using WordPress admin-ajax.php
-				$download_url = add_query_arg(
-					array(
-						'action' => 'me_download_export',
-						'file'   => base64_encode( $export[ 'file_name' ] ),
-						'nonce'  => wp_create_nonce( 'download_export_' . $export[ 'file_name' ] ),
-					),
-					admin_url( 'admin-ajax.php' )
-				);
+				<table class="widefat fixed" style="margin-top: 20px;">
+					<thead>
+						<tr>
+							<th class="check-column"><input type="checkbox" id="cb-select-all"></th>
+							<th>Blog ID</th>
+							<th>Site Name</th>
+							<th>Export File</th>
+							<th>Date</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php
+						foreach ( $exports as $export ) {
+							echo '<tr>';
+							echo '<td><input type="checkbox" name="selected_exports[]" value="' . esc_attr( $export[ 'file_name' ] ) . '"></td>';
+							echo '<td>' . esc_html( $export[ 'blog_id' ] ) . '</td>';
+							echo '<td>' . esc_html( $export[ 'site_name' ] ) . '</td>';
+							echo '<td>' . esc_html( $export[ 'file_name' ] ) . '</td>';
+							echo '<td>' . esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $export[ 'date' ] ) ) ) . '</td>';
+							echo '<td>';
 
-				echo '<a href="' . esc_url( $download_url ) . '" class="button button-small">Download</a>';
-				echo '</td></tr>';
-			}
+							// Create a download URL using WordPress admin-ajax.php
+							$download_url = add_query_arg(
+								array(
+									'action' => 'me_download_export',
+									'file'   => base64_encode( $export[ 'file_name' ] ),
+									'nonce'  => wp_create_nonce( 'download_export_' . $export[ 'file_name' ] ),
+								),
+								admin_url( 'admin-ajax.php' )
+							);
 
-			echo '</tbody></table>';
+							echo '<a href="' . esc_url( $download_url ) . '" class="button button-small">Download</a>';
+							echo '</td></tr>';
+						}
+						?>
+					</tbody>
+				</table>
+			</form>
+			<script type="text/javascript">
+				jQuery(document).ready(function ($) {
+					// Select/deselect all checkboxes
+					$('#cb-select-all').on('click', function () {
+						$('input[name="selected_exports[]"]').prop('checked', this.checked);
+					});
+
+					// Select all button
+					$('#select-all').on('click', function (e) {
+						e.preventDefault();
+						$('input[name="selected_exports[]"]').prop('checked', true);
+						$('#cb-select-all').prop('checked', true);
+					});
+
+					// Deselect all button
+					$('#deselect-all').on('click', function (e) {
+						e.preventDefault();
+						$('input[name="selected_exports[]"]').prop('checked', false);
+						$('#cb-select-all').prop('checked', false);
+					});
+
+					// Update header checkbox when individual checkboxes change
+					$('input[name="selected_exports[]"]').on('change', function () {
+						var allChecked = $('input[name="selected_exports[]"]:checked').length === $('input[name="selected_exports[]"]').length;
+						$('#cb-select-all').prop('checked', allChecked);
+					});
+				});
+			</script>
+			<?php
 		} else {
 			echo '<p>No exports found.</p>';
 		}
@@ -491,6 +541,95 @@ function me_handle_export_download() {
 	header( 'Expires: 0' );
 
 	readfile( $file_path );
+	exit;
+}
+
+/**
+ * Handle the download of multiple selected export files as a zip archive
+ */
+add_action( 'wp_ajax_me_download_selected_exports', 'me_handle_selected_exports_download' );
+function me_handle_selected_exports_download() {
+	// Check if user has permission
+	if ( ! current_user_can( 'manage_network' ) ) {
+		wp_die( 'You do not have permission to access these files.' );
+	}
+
+	// Verify nonce
+	if ( ! isset( $_POST[ 'me_download_nonce' ] ) || ! wp_verify_nonce( $_POST[ 'me_download_nonce' ], 'download_selected_exports' ) ) {
+		wp_die( 'Security check failed.' );
+	}
+
+	// Get selected export files
+	$selected_exports = isset( $_POST[ 'selected_exports' ] ) ? (array) $_POST[ 'selected_exports' ] : [];
+
+	// If no files were selected, redirect back with an error message
+	if ( empty( $selected_exports ) ) {
+		wp_redirect( add_query_arg( 'error', 'no-selection', admin_url( 'admin.php?page=multisite-exporter-history' ) ) );
+		exit;
+	}
+
+	// Get the export directory path
+	$export_dir = me_get_export_directory();
+
+	// Create a temporary file for the zip
+	$zip_filename = 'multisite-exports-' . date( 'Ymd-His' ) . '.zip';
+	$zip_filepath = trailingslashit( get_temp_dir() ) . $zip_filename;
+
+	// Create new zip archive
+	$zip = new ZipArchive();
+	if ( $zip->open( $zip_filepath, ZipArchive::CREATE ) !== true ) {
+		wp_die( 'Could not create ZIP file.' );
+	}
+
+	// Get available exports from transient
+	$available_exports = get_site_transient( 'multisite_exports' ) ?: [];
+	$file_map          = [];
+
+	// Create a lookup map for file names to file paths
+	foreach ( $available_exports as $export ) {
+		$file_map[ $export[ 'file_name' ] ] = $export;
+	}
+
+	// Add selected files to the zip archive
+	foreach ( $selected_exports as $file_name ) {
+		// Sanitize the file name
+		$file_name = sanitize_file_name( $file_name );
+
+		// Make sure the file exists in our tracked exports
+		if ( isset( $file_map[ $file_name ] ) ) {
+			$file_path = trailingslashit( $export_dir ) . $file_name;
+
+			// Check if file exists
+			if ( file_exists( $file_path ) ) {
+				// Add file to zip with filename as is
+				$zip->addFile( $file_path, $file_name );
+			}
+		}
+	}
+
+	// Close the zip file
+	$zip->close();
+
+	// Check if file was created successfully
+	if ( ! file_exists( $zip_filepath ) ) {
+		wp_die( 'Error creating ZIP file.' );
+	}
+
+	// Set headers for download
+	header( 'Content-Description: File Transfer' );
+	header( 'Content-Type: application/zip' );
+	header( 'Content-Disposition: attachment; filename="' . basename( $zip_filepath ) . '"' );
+	header( 'Content-Length: ' . filesize( $zip_filepath ) );
+	header( 'Cache-Control: must-revalidate' );
+	header( 'Pragma: public' );
+	header( 'Expires: 0' );
+
+	// Output file
+	readfile( $zip_filepath );
+
+	// Delete the temporary file
+	unlink( $zip_filepath );
+
 	exit;
 }
 
