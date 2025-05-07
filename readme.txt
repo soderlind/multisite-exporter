@@ -1,10 +1,10 @@
 === Multisite Exporter ===
 Contributors: persoderlind
 Tags: multisite, export, background processing, action scheduler
-Requires at least: 5.0
+Requires at least: 6.3
 Tested up to: 6.8
 Requires PHP: 8.2
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,10 +32,14 @@ Multisite Exporter is a powerful tool for WordPress multisite administrators who
 
 == Installation ==
 
-1. Upload the `multisite-exporter` folder to the `/wp-content/plugins/` directory
-2. Activate the plugin through the 'Plugins' menu in WordPress Network Admin
-3. Make sure the Action Scheduler library is installed (included via Composer in vendor/woocommerce/action-scheduler/)
-4. Go to MS Exporter → Multisite Exporter to start using the plugin
+1. **Quick Install**
+
+   * Download [`multisite-exporter.zip`](https://github.com/soderlind/multisite-exporter/releases/latest/download/multisite-exporter.zip)
+   * Upload via WordPress Network > Plugins > Add New > Upload Plugin
+   * Network activate the plugin.
+
+2. **Updates**
+   * Plugin updates are handled automatically via GitHub. No need to manually download and install updates.
 
 == Usage ==
 
@@ -102,13 +106,15 @@ The plugin is fully translatable. A POT file is included in the `languages` dire
 
 Yes, you can use the `multisite_exporter_directory` filter to specify a custom directory location for your export files.
 
-== Screenshots ==
-
-1. Main export configuration screen
-2. Export history page with download options
-3. Multiple file selection for bulk downloads
 
 == Changelog ==
+
+= 1.1.2 =
+* Added: Automatic plugin updates using YahnisElsts\PluginUpdateChecker
+* Added: GitHub Actions workflow to automatically create the plugin zip file on release
+* Added: Improved installation guide for easier setup
+* Fixed: Added proper error handling with WP_DEBUG checks for all error_log calls
+* Added: Comprehensive debugging section to README.md
 
 = 1.1.1 =
 * Fixed network admin URL links in view-history-page.php and view-main-page.php

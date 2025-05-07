@@ -2,21 +2,21 @@
 # This file is distributed under the GPL2.
 msgid ""
 msgstr ""
-"Project-Id-Version: Multisite Exporter 1.0.1\n"
+"Project-Id-Version: Multisite Exporter 1.1.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/multisite-exporter\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-05-07T01:43:28+00:00\n"
+"POT-Creation-Date: 2025-05-07T08:54:17+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: multisite-exporter\n"
 
 #. Plugin Name of the plugin
 #: multisite-exporter.php
-#: multisite-exporter.php:1204
+#: includes/admin/views/view-main-page.php:15
 msgid "Multisite Exporter"
 msgstr ""
 
@@ -35,196 +35,238 @@ msgstr ""
 msgid "https://soderlind.no"
 msgstr ""
 
-#: multisite-exporter.php:23
-msgid "Multisite Exporter only works on multisite installations."
+#: includes/admin/class-admin.php:127
+msgid "Processing"
 msgstr ""
 
-#: multisite-exporter.php:41
-msgid "Action Scheduler is required for Multisite Exporter to work. Please run composer install."
+#: includes/admin/class-admin.php:128
+#: includes/admin/class-admin.php:435
+msgid "Export completed successfully!"
 msgstr ""
 
-#: multisite-exporter.php:447
-#: multisite-exporter.php:448
-#: multisite-exporter.php:461
+#: includes/admin/class-admin.php:129
+#: includes/admin/class-admin.php:340
+#: includes/admin/class-admin.php:396
+msgid "Currently exporting site"
+msgstr ""
+
+#: includes/admin/class-admin.php:163
+#: includes/admin/class-admin.php:164
+#: includes/admin/views/view-scheduled-actions-page.php:16
 msgid "Scheduled Actions"
 msgstr ""
 
-#: multisite-exporter.php:462
-msgid "Action Scheduler is not available. Please make sure it is properly installed."
+#: includes/admin/class-admin.php:187
+msgid "Export has been scheduled for all subsites! View results in the"
 msgstr ""
 
-#: multisite-exporter.php:600
-msgid "Export Tasks"
+#: includes/admin/class-admin.php:187
+#: includes/admin/views/view-history-page.php:52
+#: includes/admin/views/view-main-page.php:18
+msgid "Exports"
 msgstr ""
 
-#: multisite-exporter.php:601
-msgid "This page shows only the export tasks for Multisite Exporter."
+#: includes/admin/class-admin.php:187
+#: includes/admin/views/view-main-page.php:19
+msgid "page."
 msgstr ""
 
-#: multisite-exporter.php:681
-#: multisite-exporter.php:1200
-#: multisite-exporter.php:1207
-msgid "Export History"
+#: includes/admin/class-admin.php:236
+msgid "Security check failed."
 msgstr ""
 
-#: multisite-exporter.php:694
+#: includes/admin/class-admin.php:255
+msgid "No exports selected."
+msgstr ""
+
+#: includes/admin/class-admin.php:271
+msgid "Could not create ZIP file."
+msgstr ""
+
+#. translators: %s: Comma-separated list of missing files
+#: includes/admin/class-admin.php:295
+msgid "Could not find some export files: %s"
+msgstr ""
+
+#: includes/admin/class-admin.php:321
+#: includes/admin/class-admin.php:377
+msgid "Security check failed"
+msgstr ""
+
+#: includes/admin/class-admin.php:327
+#: includes/admin/class-admin.php:383
+msgid "You do not have permission to perform this action"
+msgstr ""
+
+#: includes/admin/class-admin.php:361
+#: includes/admin/class-admin.php:417
+msgid "%d sites pending export"
+msgstr ""
+
+#: includes/admin/views/view-history-page.php:59
+msgid "Export process is currently running."
+msgstr ""
+
+#: includes/admin/views/view-history-page.php:61
+msgid "Exports will appear here when they are completed."
+msgstr ""
+
+#: includes/admin/views/view-history-page.php:66
+msgid "View scheduled actions"
+msgstr ""
+
+#: includes/admin/views/view-history-page.php:86
 msgid "Download Selected"
 msgstr ""
 
-#: multisite-exporter.php:698
+#: includes/admin/views/view-history-page.php:90
 msgid "Select All"
 msgstr ""
 
-#: multisite-exporter.php:700
+#: includes/admin/views/view-history-page.php:92
 msgid "Deselect All"
 msgstr ""
 
 #. translators: %1$d: Number of items on current page, %2$d: Total number of items
-#: multisite-exporter.php:709
+#: includes/admin/views/view-history-page.php:101
 msgid "All %1$d exports on this page are selected. "
 msgstr ""
 
 #. translators: %d: Total number of items
-#: multisite-exporter.php:718
+#: includes/admin/views/view-history-page.php:110
 msgid "Select all %d exports across all pages"
 msgstr ""
 
 #. translators: %d: Total number of items
-#: multisite-exporter.php:730
+#: includes/admin/views/view-history-page.php:122
 msgid "All %d exports across all pages are selected. "
 msgstr ""
 
-#: multisite-exporter.php:734
+#: includes/admin/views/view-history-page.php:126
 msgid "Clear selection"
 msgstr ""
 
 #. translators: %s: Number of exports
-#: multisite-exporter.php:743
-#: multisite-exporter.php:869
+#: includes/admin/views/view-history-page.php:135
+#: includes/admin/views/view-history-page.php:263
 msgid "%s export"
 msgid_plural "%s exports"
 msgstr[0] ""
 msgstr[1] ""
 
-#: multisite-exporter.php:755
-#: multisite-exporter.php:881
+#: includes/admin/views/view-history-page.php:147
+#: includes/admin/views/view-history-page.php:275
 msgid "First page"
 msgstr ""
 
-#: multisite-exporter.php:770
-#: multisite-exporter.php:896
+#: includes/admin/views/view-history-page.php:162
+#: includes/admin/views/view-history-page.php:290
 msgid "Previous page"
 msgstr ""
 
-#: multisite-exporter.php:784
-#: multisite-exporter.php:910
+#: includes/admin/views/view-history-page.php:178
+#: includes/admin/views/view-history-page.php:304
 msgid "of"
 msgstr ""
 
-#: multisite-exporter.php:793
-#: multisite-exporter.php:919
+#: includes/admin/views/view-history-page.php:187
+#: includes/admin/views/view-history-page.php:313
 msgid "Next page"
 msgstr ""
 
-#: multisite-exporter.php:808
-#: multisite-exporter.php:934
+#: includes/admin/views/view-history-page.php:202
+#: includes/admin/views/view-history-page.php:328
 msgid "Last page"
 msgstr ""
 
-#: multisite-exporter.php:827
+#: includes/admin/views/view-history-page.php:221
 msgid "Blog ID"
 msgstr ""
 
-#: multisite-exporter.php:828
+#: includes/admin/views/view-history-page.php:222
 msgid "Site Name"
 msgstr ""
 
-#: multisite-exporter.php:829
+#: includes/admin/views/view-history-page.php:223
 msgid "Export File"
 msgstr ""
 
-#: multisite-exporter.php:830
+#: includes/admin/views/view-history-page.php:224
 msgid "Date"
 msgstr ""
 
-#: multisite-exporter.php:831
+#: includes/admin/views/view-history-page.php:225
 msgid "Actions"
 msgstr ""
 
-#: multisite-exporter.php:855
+#: includes/admin/views/view-history-page.php:249
 msgid "Download"
 msgstr ""
 
-#: multisite-exporter.php:1056
+#: includes/admin/views/view-history-page.php:346
 msgid "No exports found."
 msgstr ""
 
-#: multisite-exporter.php:1108
-msgid "Security check failed."
-msgstr ""
-
-#: multisite-exporter.php:1127
-msgid "No exports selected."
-msgstr ""
-
-#: multisite-exporter.php:1142
-msgid "Could not create ZIP file."
-msgstr ""
-
-#. translators: %s: Comma-separated list of missing files
-#: multisite-exporter.php:1170
-msgid "Could not find some export files: %s"
-msgstr ""
-
-#: multisite-exporter.php:1200
-msgid "Export has been scheduled for all subsites! View results in the"
-msgstr ""
-
-#: multisite-exporter.php:1200
-#: multisite-exporter.php:1208
-msgid "page."
-msgstr ""
-
-#: multisite-exporter.php:1205
+#: includes/admin/views/view-main-page.php:16
 msgid "This tool exports content from all subsites in your multisite installation. Exports are saved to a common folder and can be downloaded from the"
 msgstr ""
 
-#: multisite-exporter.php:1214
+#: includes/admin/views/view-main-page.php:26
 msgid "Content"
 msgstr ""
 
-#: multisite-exporter.php:1217
+#: includes/admin/views/view-main-page.php:29
 msgid "All Content"
 msgstr ""
 
-#: multisite-exporter.php:1218
+#: includes/admin/views/view-main-page.php:30
 msgid "Posts"
 msgstr ""
 
-#: multisite-exporter.php:1219
+#: includes/admin/views/view-main-page.php:31
 msgid "Pages"
 msgstr ""
 
-#: multisite-exporter.php:1220
+#: includes/admin/views/view-main-page.php:32
 msgid "Media"
 msgstr ""
 
-#: multisite-exporter.php:1225
+#: includes/admin/views/view-main-page.php:37
 msgid "Post Type (optional)"
 msgstr ""
 
-#: multisite-exporter.php:1227
+#: includes/admin/views/view-main-page.php:39
 msgid "e.g., product"
 msgstr ""
 
-#: multisite-exporter.php:1230
+#: includes/admin/views/view-main-page.php:42
 msgid "Start Date (YYYY-MM-DD)"
 msgstr ""
 
-#: multisite-exporter.php:1234
+#: includes/admin/views/view-main-page.php:46
 msgid "End Date (YYYY-MM-DD)"
 msgstr ""
 
-#: multisite-exporter.php:1238
+#: includes/admin/views/view-main-page.php:50
 msgid "Run Export for All Subsites"
+msgstr ""
+
+#: includes/admin/views/view-scheduled-actions-page.php:17
+msgid "Action Scheduler is not available. Please make sure it is properly installed."
+msgstr ""
+
+#: includes/admin/views/view-scheduled-actions-page.php:164
+msgid "Export Tasks"
+msgstr ""
+
+#: includes/admin/views/view-scheduled-actions-page.php:165
+msgid "This page shows only the export tasks for Multisite Exporter."
+msgstr ""
+
+#: includes/class-multisite-exporter.php:133
+msgid "Multisite Exporter only works on multisite installations."
+msgstr ""
+
+#: includes/class-multisite-exporter.php:142
+msgid "Action Scheduler is required for Multisite Exporter to work. Please run composer install."
 msgstr ""

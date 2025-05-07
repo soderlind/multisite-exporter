@@ -10,7 +10,7 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 /**
  * Main plugin class.
  *
@@ -18,6 +18,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @package    Multisite_Exporter
  */
 class Multisite_Exporter {
+
+
+	/**
+	 * GitHub URL for update checker.
+	 * @var string
+	 */
+	private $github_url = 'https://github.com/soderlind/multisite-exporter';
 
 	/**
 	 * The single instance of the class.
@@ -47,7 +54,7 @@ class Multisite_Exporter {
 	 */
 	public function __construct() {
 		$this->includes();
-		$this->init_hooks();
+		$this->setup_updater();
 
 		// Check if we're running in a multisite environment
 		if ( ! is_multisite() ) {
@@ -81,12 +88,17 @@ class Multisite_Exporter {
 	}
 
 	/**
-	 * Initialize hooks
-	 *
-	 * @return void
+	 * Set up the update checker using GitHub integration
 	 */
-	private function init_hooks() {
-		// Action Scheduler is now loaded directly in the main plugin file
+	public function setup_updater() {
+		$update_checker = PucFactory::buildUpdateChecker(
+			$this->github_url,
+			MULTISITE_EXPORTER_PLUGIN_FILE,
+			'multisite-exporter'
+		);
+
+		$update_checker->setBranch( 'main' );
+		$update_checker->getVcsApi()->enableReleaseAssets( '/multisite-exporter\.zip/' );
 	}
 
 	/**
