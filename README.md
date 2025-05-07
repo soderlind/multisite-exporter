@@ -62,12 +62,12 @@ composer install
 
 ### Accessing Export Files
 
-1. Navigate to MS Exporter → Export History
+1. Navigate to MS Exporter → Exports
 2. View a list of all completed exports from all subsites
 3. Download options:
    - Click the "Download" button next to an individual export
    - Select multiple exports using checkboxes and click "Download Selected" to get a zip file
-   - Use "Select All" and "Download Selected" to download all exports at once
+   - Use "Select All" and "Download Selected" to download all exports at once in a zip file.
 
 ## How Action Scheduler Works
 
