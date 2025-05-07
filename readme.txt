@@ -2,9 +2,9 @@
 Contributors: persoderlind
 Tags: multisite, export, background processing, action scheduler
 Requires at least: 5.0
-Tested up to: 6.4
-Requires PHP: 7.0
-Stable tag: 1.0.1
+Tested up to: 6.8
+Requires PHP: 8.2
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -110,18 +110,39 @@ Yes, you can use the `multisite_exporter_directory` filter to specify a custom d
 
 == Changelog ==
 
+= 1.1.0 =
+* Refactored plugin architecture to follow single responsibility principle
+  * Moved admin UI functionality to dedicated class-admin.php
+  * Separated export processing logic into class-export.php
+  * Created core initialization class in class-init.php
+* Refactored JavaScript: Moved all inline JavaScript to separate files
+  * Created history-page.js for export history page functionality
+  * Added proper namespacing through IIFE pattern
+* Improved script loading using WordPress enqueuing API
+  * Renamed enqueue_admin_styles() to enqueue_admin_assets() for better semantics
+  * Implemented conditional asset loading based on current admin page
+* Moved plugin constants from class-multisite-exporter.php to main plugin file
+  * Better initialization and earlier constant availability
+* Enhanced UI: Added disable/enable functionality for selection buttons when "select all across pages" is active
+
 = 1.0.1 =
 * Updated documentation to clarify the location of the Action Scheduler library
 * Improved documentation with more detailed information about Action Scheduler integration
 
 = 1.0.0 =
 * Initial release
-* Background export processing for all subsites
+* Background export processing for all subsites using Action Scheduler
 * Export filtering by content type, custom post type, and date range
-* Export history page with individual and bulk download options
-* Full internationalization support
+* Centralized export storage in uploads directory
+* Export history page showing all completed exports
+* Download functionality for individual export files
+* Multiple selection and bulk download of export files as a zip archive
+* Full internationalization support with POT file
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+Improved code organization and UI enhancements for export selection.
 
 = 1.0.1 =
 Documentation update to clarify the location of the Action Scheduler library.
