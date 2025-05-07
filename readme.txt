@@ -4,7 +4,7 @@ Tags: multisite, export, background processing, action scheduler
 Requires at least: 5.0
 Tested up to: 6.8
 Requires PHP: 8.2
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -109,6 +109,11 @@ Yes, you can use the `multisite_exporter_directory` filter to specify a custom d
 3. Multiple file selection for bulk downloads
 
 == Changelog ==
+
+= 1.1.1 =
+* Fixed network admin URL links in view-history-page.php and view-main-page.php
+* Added conditional WP_DEBUG check for all error logging functions
+* Updated documentation in README.md with information about debug logging
 
 = 1.1.0 =
 * Refactored plugin architecture to follow single responsibility principle
