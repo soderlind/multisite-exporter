@@ -40,7 +40,7 @@ cd multisite-exporter
 composer install
 ```
 
-### Method 2: Manual Installation
+### Method 2: Manual Installation [To be added]
 
 1. Download the plugin zip file
 2. Upload and extract to your WordPress plugins directory
