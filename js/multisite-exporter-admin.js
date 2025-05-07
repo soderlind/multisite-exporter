@@ -25,7 +25,7 @@
             $individualCheckboxes.prop('checked', isChecked);
             
             if (isChecked) {
-                // When checking "Select All", show the "Select All Pages" option
+                // When checking "Select All", always show the "Select All Pages" option
                 $selectAllPagesToggle.show();
                 $selectAllPagesToggle.parent().show();
             } else {
@@ -68,10 +68,13 @@
                 $selectAllPagesInfo.hide();
             }
             
-            // Show/hide the "Select All Pages" option based on the state of the checkboxes
+            // Always show the "Select All Pages" option when all checkboxes are checked
             if (allChecked) {
                 $selectAllPagesToggle.show();
                 $selectAllPagesToggle.parent().show();
+            } else {
+                // Hide the toggle when not all checkboxes are checked
+                $selectAllPagesToggle.prop('checked', false);
             }
             
             updateSelectedCounter();
