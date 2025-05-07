@@ -4,6 +4,20 @@ All notable changes to the Multisite Exporter plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] - 2025-05-07
+### Fixed
+- Added proper error handling with WP_DEBUG checks for all error_log calls in class-init.php
+- Implemented `if ( defined( 'WP_DEBUG' ) && WP_DEBUG )` checks around all 7 instances of error logging
+
+### Added
+- Added automatic plugin updates using YahnisElsts\PluginUpdateChecker\v5\PucFactory
+- Added GitHub Actions workflow to automatically create the plugin zip file on release
+- Improved installation guide in readme files for easier setup
+- Comprehensive debugging section to README.md with:
+  - Documentation of error logging behavior with WP_DEBUG
+  - Examples of common log messages
+  - Instructions for enabling debug mode in WordPress
+
 ## [1.1.1] - 2025-05-07
 ### Fixed
 - Network admin URL links in view-history-page.php and view-main-page.php to resolve "Sorry, you are not allowed to access this page" errors

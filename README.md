@@ -21,31 +21,25 @@ https://github.com/user-attachments/assets/1e8ce516-1b0e-47f4-9128-e615bebadd89
 ## Requirements
 
 - WordPress Multisite installation
-- PHP 7.0 or higher
-- Action Scheduler library (included via Composer)
+- PHP 8.2 or higher
+- Action Scheduler library (included with the plugin)
 
 ## Installation
 
-### Method 1: Composer
+1. **Quick Install**
 
-1. Clone this repository to your WordPress plugins directory
-2. Navigate to the plugin directory
-3. Run `composer install` to install dependencies
-4. Activate the plugin from the WordPress Network Admin
+   - Download [`multisite-exporter.zip`](https://github.com/soderlind/multisite-exporter/releases/latest/download/multisite-exporter.zip)
+   - Upload via WordPress Network > Plugins > Add New > Upload Plugin
+   - Network activate the plugin.
 
-```bash
-cd wp-content/plugins
-git clone https://github.com/yourusername/multisite-exporter.git
-cd multisite-exporter
-composer install
-```
+2. **Composer Install**
 
-### Method 2: Manual Installation [To be added]
+   ```bash
+   composer require soderlind/multisite-exporter
+   ```
 
-1. Download the plugin zip file
-2. Upload and extract to your WordPress plugins directory
-3. Make sure the Action Scheduler library is included in the vendor directory
-4. Activate the plugin from the WordPress Network Admin
+3. **Updates**
+   * Plugin updates are handled automatically via GitHub. No need to manually download and install updates.
 
 ## Usage
 

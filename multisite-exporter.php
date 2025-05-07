@@ -2,7 +2,7 @@
 /*
 Plugin Name: Multisite Exporter
 Description: Runs WordPress Exporter on each subsite in a multisite, in the background.
-Version: 1.1.1
+Version: 1.1.2
 Author: Per Søderlind
 Author URI: https://soderlind.no
 License: GPL2
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
-define( 'MULTISITE_EXPORTER_VERSION', '1.1.1' );
+define( 'MULTISITE_EXPORTER_VERSION', '1.1.2' );
 define( 'MULTISITE_EXPORTER_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'MULTISITE_EXPORTER_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'MULTISITE_EXPORTER_PLUGIN_FILE', __FILE__ );
@@ -28,6 +28,8 @@ $action_scheduler_file = MULTISITE_EXPORTER_PLUGIN_DIR . 'vendor/woocommerce/act
 if ( file_exists( $action_scheduler_file ) ) {
 	require_once $action_scheduler_file;
 }
+
+require_once MULTISITE_EXPORTER_PLUGIN_DIR . 'vendor/autoload.php';
 
 // Include the main plugin class
 require_once MULTISITE_EXPORTER_PLUGIN_DIR . 'includes/class-multisite-exporter.php';
