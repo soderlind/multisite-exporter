@@ -81,9 +81,19 @@ The Multisite Exporter plugin uses Action Scheduler, a robust background process
   
 - **Queue Processing**: Tasks are executed in a controlled manner, with rate limiting to prevent server overload.
 
-- **Admin Interface**: The Action Scheduler includes its own admin interface (available under Tools → Scheduled Actions) where you can monitor the progress of exports.
+- **Admin Interface**: The plugin provides a filtered view of Action Scheduler's interface under MS Exporter → Scheduled Actions, where you can monitor the progress of exports.
 
 - **Scaling**: The architecture can handle thousands of tasks, making it perfect for large multisite networks with hundreds of subsites.
+
+### Action Scheduler Location
+
+The Action Scheduler library is included in this plugin via Composer and can be found at:
+
+```
+/vendor/woocommerce/action-scheduler/
+```
+
+All Action Scheduler related files are loaded automatically when the plugin initializes.
 
 ### Benefits for Multisite Exports
 

@@ -4,7 +4,7 @@ Tags: multisite, export, background processing, action scheduler
 Requires at least: 5.0
 Tested up to: 6.4
 Requires PHP: 7.0
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,13 +28,13 @@ Multisite Exporter is a powerful tool for WordPress multisite administrators who
 
 * WordPress Multisite installation
 * PHP 7.0 or higher
-* Action Scheduler library (included)
+* Action Scheduler library (included via Composer in vendor/woocommerce/action-scheduler/)
 
 == Installation ==
 
 1. Upload the `multisite-exporter` folder to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress Network Admin
-3. Make sure the Action Scheduler library is installed (included via Composer)
+3. Make sure the Action Scheduler library is installed (included via Composer in vendor/woocommerce/action-scheduler/)
 4. Go to MS Exporter → Multisite Exporter to start using the plugin
 
 == Usage ==
@@ -79,6 +79,13 @@ By default, all export files are stored in a centralized location within your Wo
 
 You can change this location using the `multisite_exporter_directory` filter.
 
+= Where is the Action Scheduler library located? =
+
+The Action Scheduler library is included with the plugin via Composer and can be found in the following location:
+`/vendor/woocommerce/action-scheduler/`
+
+All Action Scheduler related files are loaded automatically when the plugin initializes.
+
 = Can I export only certain content types? =
 
 Yes, you can filter exports by content type (all content, posts, pages, or media), custom post type, and date range.
@@ -103,6 +110,10 @@ Yes, you can use the `multisite_exporter_directory` filter to specify a custom d
 
 == Changelog ==
 
+= 1.0.1 =
+* Updated documentation to clarify the location of the Action Scheduler library
+* Improved documentation with more detailed information about Action Scheduler integration
+
 = 1.0.0 =
 * Initial release
 * Background export processing for all subsites
@@ -111,6 +122,9 @@ Yes, you can use the `multisite_exporter_directory` filter to specify a custom d
 * Full internationalization support
 
 == Upgrade Notice ==
+
+= 1.0.1 =
+Documentation update to clarify the location of the Action Scheduler library.
 
 = 1.0.0 =
 Initial release of the Multisite Exporter plugin.
