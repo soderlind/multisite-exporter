@@ -4,7 +4,7 @@ Tags: multisite, export, background processing, action scheduler
 Requires at least: 6.3
 Tested up to: 6.8
 Requires PHP: 8.2
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -108,6 +108,13 @@ Yes, you can use the `multisite_exporter_directory` filter to specify a custom d
 
 
 == Changelog ==
+
+= 1.1.4 =
+* Fixed: Redundant code in admin views for better maintainability
+* Fixed: Code structure in scheduled actions page
+* Fixed: PHP 8.2+ deprecation warning: "ZipArchive::open(): Using empty file as ZipArchive is deprecated"
+* Improved: Refactored duplicate code in pagination handling
+* Enhanced: Consolidated progress tracking logic for better efficiency
 
 = 1.1.3 =
 * Fixed: "The link you followed has expired" error when performing bulk delete operations

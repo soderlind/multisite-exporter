@@ -11,6 +11,114 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Outputs pagination links
+ * 
+ * @param int $current_page Current page number
+ * @param int $total_pages Total number of pages
+ * @param int $total_exports Total number of export items
+ * @return void
+ */
+function me_output_pagination( $current_page, $total_pages, $total_exports ) {
+	?>
+	<div class="tablenav-pages">
+		<span class="displaying-num">
+			<?php
+			printf(
+				/* translators: %s: Number of exports */
+				_n( '%s export', '%s exports', $total_exports, 'multisite-exporter' ),
+				number_format_i18n( $total_exports )
+			);
+			?>
+		</span>
+		<span class="pagination-links">
+			<?php
+			// First page link
+			if ( $current_page > 1 ) {
+				printf(
+					'<a class="first-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
+					esc_url( add_query_arg( 'paged', 1 ) ),
+					esc_html__( 'First page', 'multisite-exporter' ),
+					'&laquo;'
+				);
+			} else {
+				printf(
+					'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
+					'&laquo;'
+				);
+			}
+
+			// Previous page link
+			if ( $current_page > 1 ) {
+				printf(
+					'<a class="prev-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
+					esc_url( add_query_arg( 'paged', max( 1, $current_page - 1 ) ) ),
+					esc_html__( 'Previous page', 'multisite-exporter' ),
+					'&lsaquo;'
+				);
+			} else {
+				printf(
+					'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
+					'&lsaquo;'
+				);
+			}
+
+			// Current page text input (for top pagination) or text (for bottom pagination)
+			if ( did_action( 'me_top_pagination' ) === 0 ) {
+				printf(
+					'<span class="paging-input"><input class="current-page" id="current-page-selector" type="text" name="paged" value="%s" size="1" aria-describedby="table-paging" data-total-pages="%s" data-base-url="%s"> %s <span class="total-pages">%s</span></span>',
+					$current_page,
+					intval( $total_pages ),
+					esc_js( remove_query_arg( 'paged' ) ),
+					esc_html__( 'of', 'multisite-exporter' ),
+					number_format_i18n( $total_pages )
+				);
+				// Mark that top pagination has been output
+				do_action( 'me_top_pagination' );
+			} else {
+				printf(
+					'<span class="paging-input">%s %s <span class="total-pages">%s</span></span>',
+					$current_page,
+					esc_html__( 'of', 'multisite-exporter' ),
+					number_format_i18n( $total_pages )
+				);
+			}
+
+			// Next page link
+			if ( $current_page < $total_pages ) {
+				printf(
+					'<a class="next-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
+					esc_url( add_query_arg( 'paged', min( $total_pages, $current_page + 1 ) ) ),
+					esc_html__( 'Next page', 'multisite-exporter' ),
+					'&rsaquo;'
+				);
+			} else {
+				printf(
+					'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
+					'&rsaquo;'
+				);
+			}
+
+			// Last page link
+			if ( $current_page < $total_pages ) {
+				printf(
+					'<a class="last-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
+					esc_url( add_query_arg( 'paged', $total_pages ) ),
+					esc_html__( 'Last page', 'multisite-exporter' ),
+					'&raquo;'
+				);
+			} else {
+				printf(
+					'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
+					'&raquo;'
+				);
+			}
+			?>
+		</span>
+	</div>
+	<?php
+}
+
 // Get all exports
 $all_exports = get_site_transient( 'multisite_exports' ) ?: array();
 
@@ -127,90 +235,7 @@ $exports = array_slice( $all_exports, $offset, $per_page );
 				</div>
 
 				<?php if ( $total_pages > 1 ) : ?>
-					<div class="tablenav-pages">
-						<span class="displaying-num">
-							<?php
-							printf(
-								/* translators: %s: Number of exports */
-								_n( '%s export', '%s exports', $total_exports, 'multisite-exporter' ),
-								number_format_i18n( $total_exports )
-							);
-							?>
-						</span>
-						<span class="pagination-links">
-							<?php
-							// First page link
-							if ( $current_page > 1 ) {
-								printf(
-									'<a class="first-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
-									esc_url( add_query_arg( 'paged', 1 ) ),
-									esc_html__( 'First page', 'multisite-exporter' ),
-									'&laquo;'
-								);
-							} else {
-								printf(
-									'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
-									'&laquo;'
-								);
-							}
-
-							// Previous page link
-							if ( $current_page > 1 ) {
-								printf(
-									'<a class="prev-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
-									esc_url( add_query_arg( 'paged', max( 1, $current_page - 1 ) ) ),
-									esc_html__( 'Previous page', 'multisite-exporter' ),
-									'&lsaquo;'
-								);
-							} else {
-								printf(
-									'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
-									'&lsaquo;'
-								);
-							}
-
-							// Current page text input
-							printf(
-								'<span class="paging-input"><input class="current-page" id="current-page-selector" type="text" name="paged" value="%s" size="1" aria-describedby="table-paging" data-total-pages="%s" data-base-url="%s"> %s <span class="total-pages">%s</span></span>',
-								$current_page,
-								intval( $total_pages ),
-								esc_js( remove_query_arg( 'paged' ) ),
-								esc_html__( 'of', 'multisite-exporter' ),
-								number_format_i18n( $total_pages )
-							);
-
-							// Next page link
-							if ( $current_page < $total_pages ) {
-								printf(
-									'<a class="next-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
-									esc_url( add_query_arg( 'paged', min( $total_pages, $current_page + 1 ) ) ),
-									esc_html__( 'Next page', 'multisite-exporter' ),
-									'&rsaquo;'
-								);
-							} else {
-								printf(
-									'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
-									'&rsaquo;'
-								);
-							}
-
-							// Last page link
-							if ( $current_page < $total_pages ) {
-								printf(
-									'<a class="last-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
-									esc_url( add_query_arg( 'paged', $total_pages ) ),
-									esc_html__( 'Last page', 'multisite-exporter' ),
-									'&raquo;'
-								);
-							} else {
-								printf(
-									'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
-									'&raquo;'
-								);
-							}
-							?>
-						</span>
-					</div>
+					<?php me_output_pagination( $current_page, $total_pages, $total_exports ); ?>
 				<?php endif; ?>
 			</div>
 
@@ -255,88 +280,7 @@ $exports = array_slice( $all_exports, $offset, $per_page );
 
 			<?php if ( $total_pages > 1 ) : ?>
 				<div class="tablenav bottom">
-					<div class="tablenav-pages">
-						<span class="displaying-num">
-							<?php
-							printf(
-								/* translators: %s: Number of exports */
-								_n( '%s export', '%s exports', $total_exports, 'multisite-exporter' ),
-								number_format_i18n( $total_exports )
-							);
-							?>
-						</span>
-						<span class="pagination-links">
-							<?php
-							// First page link
-							if ( $current_page > 1 ) {
-								printf(
-									'<a class="first-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
-									esc_url( add_query_arg( 'paged', 1 ) ),
-									esc_html__( 'First page', 'multisite-exporter' ),
-									'&laquo;'
-								);
-							} else {
-								printf(
-									'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
-									'&laquo;'
-								);
-							}
-
-							// Previous page link
-							if ( $current_page > 1 ) {
-								printf(
-									'<a class="prev-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
-									esc_url( add_query_arg( 'paged', max( 1, $current_page - 1 ) ) ),
-									esc_html__( 'Previous page', 'multisite-exporter' ),
-									'&lsaquo;'
-								);
-							} else {
-								printf(
-									'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
-									'&lsaquo;'
-								);
-							}
-
-							// Current page text
-							printf(
-								'<span class="paging-input">%s %s <span class="total-pages">%s</span></span>',
-								$current_page,
-								esc_html__( 'of', 'multisite-exporter' ),
-								number_format_i18n( $total_pages )
-							);
-
-							// Next page link
-							if ( $current_page < $total_pages ) {
-								printf(
-									'<a class="next-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
-									esc_url( add_query_arg( 'paged', min( $total_pages, $current_page + 1 ) ) ),
-									esc_html__( 'Next page', 'multisite-exporter' ),
-									'&rsaquo;'
-								);
-							} else {
-								printf(
-									'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
-									'&rsaquo;'
-								);
-							}
-
-							// Last page link
-							if ( $current_page < $total_pages ) {
-								printf(
-									'<a class="last-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
-									esc_url( add_query_arg( 'paged', $total_pages ) ),
-									esc_html__( 'Last page', 'multisite-exporter' ),
-									'&raquo;'
-								);
-							} else {
-								printf(
-									'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
-									'&raquo;'
-								);
-							}
-							?>
-						</span>
-					</div>
+					<?php me_output_pagination( $current_page, $total_pages, $total_exports ); ?>
 				</div>
 			<?php endif; ?>
 		</form>

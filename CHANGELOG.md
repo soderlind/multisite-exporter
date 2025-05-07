@@ -4,6 +4,18 @@ All notable changes to the Multisite Exporter plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.4] - 2025-05-07
+### Fixed
+- Redundant code in admin views for better maintainability
+- Code structure in scheduled actions page
+- PHP 8.2+ deprecation warning: "ZipArchive::open(): Using empty file as ZipArchive is deprecated"
+
+### Improved
+- Refactored duplicate code in pagination handling
+- Consolidated progress tracking logic for better efficiency
+- Extracted duplicate code in `view-scheduled-actions-page.php` into reusable helper function
+- Applied DRY (Don't Repeat Yourself) principle to eliminate code duplication in admin classes
+
 ## [1.1.3] - 2025-05-07
 ### Fixed
 - "The link you followed has expired" error when performing bulk delete operations in scheduled actions
