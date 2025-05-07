@@ -63,6 +63,38 @@ composer install
    - Select multiple exports using checkboxes and click "Download Selected" to get a zip file
    - Use "Select All" and "Download Selected" to download all exports at once
 
+## How Action Scheduler Works
+
+The Multisite Exporter plugin uses Action Scheduler, a robust background processing library for WordPress, to handle export operations efficiently across multiple sites. Here's how it works:
+
+### Overview
+
+1. **Task Scheduling**: When you click "Run Export for All Subsites," the plugin creates an individual task for each subsite in your network.
+
+2. **Background Processing**: These tasks are processed in the background using WordPress cron, without blocking user interactions or causing timeout issues.
+
+3. **Failure Handling**: If an export fails, Action Scheduler will automatically retry it based on its built-in retry logic, ensuring robust operation even in challenging environments.
+
+### Technical Details
+
+- **Storage**: Action Scheduler stores tasks in a custom table, ensuring they don't get lost even in case of server interruptions.
+  
+- **Queue Processing**: Tasks are executed in a controlled manner, with rate limiting to prevent server overload.
+
+- **Admin Interface**: The Action Scheduler includes its own admin interface (available under Tools → Scheduled Actions) where you can monitor the progress of exports.
+
+- **Scaling**: The architecture can handle thousands of tasks, making it perfect for large multisite networks with hundreds of subsites.
+
+### Benefits for Multisite Exports
+
+- **No Timeout Issues**: Export processes run in the background, avoiding PHP timeout restrictions.
+  
+- **Server-Friendly**: Tasks are processed in batches, preventing server resource exhaustion.
+  
+- **Monitoring**: You can track the progress of exports and identify any issues that may occur.
+
+- **Reliability**: The persistent storage mechanism ensures that even if a server restarts, your export tasks will continue where they left off.
+
 ## Export File Storage
 
 All export files are stored in a centralized location within your WordPress uploads directory:
