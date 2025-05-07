@@ -4,7 +4,7 @@ Tags: multisite, export, background processing, action scheduler
 Requires at least: 6.3
 Tested up to: 6.8
 Requires PHP: 8.2
-Stable tag: 1.1.2
+Stable tag: 1.1.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -108,6 +108,12 @@ Yes, you can use the `multisite_exporter_directory` filter to specify a custom d
 
 
 == Changelog ==
+
+= 1.1.3 =
+* Fixed: "The link you followed has expired" error when performing bulk delete operations
+* Fixed: PHP Fatal error "Cannot use auto-global as lexical variable" in scheduled actions page
+* Fixed: "Headers already sent" warning by adding headers_sent() check before redirects
+* Improved: Error handling for bulk operations in scheduled actions
 
 = 1.1.2 =
 * Added: Automatic plugin updates using YahnisElsts\PluginUpdateChecker

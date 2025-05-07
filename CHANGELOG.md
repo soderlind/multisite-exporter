@@ -4,6 +4,17 @@ All notable changes to the Multisite Exporter plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.3] - 2025-05-07
+### Fixed
+- "The link you followed has expired" error when performing bulk delete operations in scheduled actions
+- PHP Fatal error "Cannot use auto-global as lexical variable" in scheduled actions page
+- "Headers already sent" warning by adding headers_sent() check before redirects
+
+### Improved
+- Error handling for bulk operations in scheduled actions
+- Added proper checkbox handling for "select all" functionality in bulk operations
+- Implemented a fallback for displaying success messages when headers are already sent
+
 ## [1.1.2] - 2025-05-07
 ### Fixed
 - Added proper error handling with WP_DEBUG checks for all error_log calls in class-init.php

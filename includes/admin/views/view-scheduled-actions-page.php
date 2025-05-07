@@ -19,6 +19,77 @@ if ( ! class_exists( 'ActionScheduler_AdminView' ) ) {
 	return;
 }
 
+// Process bulk actions if submitted
+if ( isset( $_POST[ '_wpnonce' ] ) && ( isset( $_POST[ 'action' ] ) && $_POST[ 'action' ] !== '-1' ) || ( isset( $_POST[ 'action2' ] ) && $_POST[ 'action2' ] !== '-1' ) ) {
+	// Verify nonce
+	check_admin_referer( 'bulk-' . 'action-scheduler-actions' ); // This matches WordPress standard list table nonce naming
+
+	// Get selected items - use standard WordPress list table field name for checkboxes
+	$action_ids = isset( $_POST[ 'action_scheduler_actions' ] ) ? array_map( 'intval', (array) $_POST[ 'action_scheduler_actions' ] ) : array();
+
+	// Process based on the action
+	if ( ! empty( $action_ids ) ) {
+		$store = ActionScheduler::store();
+
+		// Handle delete action
+		if ( ( isset( $_POST[ 'action' ] ) && $_POST[ 'action' ] === 'delete' ) || ( isset( $_POST[ 'action2' ] ) && $_POST[ 'action2' ] === 'delete' ) ) {
+			foreach ( $action_ids as $action_id ) {
+				$store->delete_action( $action_id );
+			}
+
+			// Store deleted count in transient to show a notice after redirect
+			$deleted_count = count( $action_ids );
+			set_transient( 'me_bulk_actions_deleted_count', $deleted_count, 30 );
+
+			// Only redirect if headers haven't been sent yet
+			if ( ! headers_sent() ) {
+				wp_redirect( add_query_arg( array(
+					'page'    => 'me-scheduled-actions',
+					'hook'    => 'me_process_site_export',
+					'deleted' => $deleted_count,
+				), admin_url( 'admin.php' ) ) );
+				exit;
+			} else {
+				// If headers already sent, we'll show the notice immediately
+				add_action( 'admin_notices', function () use ($deleted_count) {
+					$message = sprintf(
+						_n(
+							'%s scheduled action deleted successfully.',
+							'%s scheduled actions deleted successfully.',
+							$deleted_count,
+							'multisite-exporter'
+						),
+						number_format_i18n( $deleted_count )
+					);
+					echo '<div class="updated notice is-dismissible"><p>' . esc_html( $message ) . '</p></div>';
+				} );
+			}
+		}
+	}
+}
+
+// Show success message after any deletion operation
+if ( ( isset( $_GET[ 'deleted' ] ) && intval( $_GET[ 'deleted' ] ) > 0 ) ||
+	( isset( $_GET[ 'bulk_deletion_complete' ] ) && isset( $_GET[ 'deleted_count' ] ) && intval( $_GET[ 'deleted_count' ] ) > 0 ) ) {
+
+	// Get the count from either parameter and store it in a local variable
+	$deleted_count = isset( $_GET[ 'deleted' ] ) ? intval( $_GET[ 'deleted' ] ) : intval( $_GET[ 'deleted_count' ] );
+
+	// Use the local variable instead of the superglobal in the closure
+	add_action( 'admin_notices', function () use ($deleted_count) {
+		$message = sprintf(
+			_n(
+				'%s scheduled action deleted successfully.',
+				'%s scheduled actions deleted successfully.',
+				$deleted_count,
+				'multisite-exporter'
+			),
+			number_format_i18n( $deleted_count )
+		);
+		echo '<div class="updated notice is-dismissible"><p>' . esc_html( $message ) . '</p></div>';
+	} );
+}
+
 // Add a strong filter directly to the data store's query method
 add_filter( 'action_scheduler_get_actions_query_args', array( ME_Admin::instance(), 'force_hook_filter' ), 999999 );
 
@@ -58,6 +129,12 @@ class ME_Filtered_List_Table extends ActionScheduler_ListTable {
 
 		// Ensure our filters persist at every level
 		add_filter( 'action_scheduler_list_table_query_args', array( $this, 'filter_by_hook' ), 999999 );
+
+		// Update the plural and singular args to match what WordPress expects for nonce verification
+		$this->_args = array(
+			'plural'   => 'action-scheduler-actions',
+			'singular' => 'action-scheduler-action',
+		);
 	}
 
 	/**
@@ -70,6 +147,45 @@ class ME_Filtered_List_Table extends ActionScheduler_ListTable {
 		// Override any existing hook filter
 		$args[ 'hook' ] = 'me_process_site_export';
 		return $args;
+	}
+
+	/**
+	 * Define available bulk actions
+	 *
+	 * @return array
+	 */
+	protected function get_bulk_actions() {
+		return array(
+			'delete' => __( 'Delete', 'multisite-exporter' ),
+		);
+	}
+
+	/**
+	 * Override column_cb method to ensure proper checkbox naming
+	 * This fixes the "select all" checkbox functionality
+	 *
+	 * @param array $row The row to render
+	 * @return string
+	 */
+	public function column_cb( $row ) {
+		$checkbox_id = 'cb-select-' . $row[ 'ID' ];
+		return sprintf(
+			'<label class="screen-reader-text" for="%1$s">%2$s</label>' .
+			'<input type="checkbox" name="%3$s[]" id="%1$s" value="%4$s" />',
+			$checkbox_id,
+			esc_html__( 'Select item', 'multisite-exporter' ),
+			$this->get_bulk_actions_checkbox_name(),
+			$row[ 'ID' ]
+		);
+	}
+
+	/**
+	 * Override the checkbox name to ensure it matches what our bulk action handler expects
+	 * 
+	 * @return string
+	 */
+	protected function get_bulk_actions_checkbox_name() {
+		return 'action_scheduler_actions';
 	}
 
 	/**
@@ -153,6 +269,66 @@ class ME_Filtered_List_Table extends ActionScheduler_ListTable {
 
 		return $views;
 	}
+
+	/**
+	 * Override process_bulk_action to handle POST submissions
+	 * The parent class expects GET parameters, but our form uses POST
+	 */
+	protected function process_bulk_action() {
+		// Detect when a bulk action is being triggered
+		$action = $this->current_action();
+		if ( ! $action ) {
+			return;
+		}
+
+		// Check if this is a POST submission with our action_scheduler_actions field
+		if ( isset( $_POST[ '_wpnonce' ] ) && isset( $_POST[ 'action_scheduler_actions' ] ) && is_array( $_POST[ 'action_scheduler_actions' ] ) ) {
+			// Verify nonce
+			check_admin_referer( 'bulk-' . $this->_args[ 'plural' ] );
+
+			$method = 'bulk_' . $action;
+			if ( array_key_exists( $action, $this->bulk_actions ) && is_callable( array( $this, $method ) ) ) {
+				$ids = array_map( 'absint', $_POST[ 'action_scheduler_actions' ] );
+
+				if ( ! empty( $ids ) ) {
+					// Call the bulk method with the IDs
+					$this->$method( $ids, '' );
+
+					// Redirect to remove POST data and prevent refresh issues
+					if ( isset( $_SERVER[ 'REQUEST_URI' ] ) ) {
+						wp_safe_redirect(
+							add_query_arg(
+								array(
+									'page'    => 'me-scheduled-actions',
+									'hook'    => 'me_process_site_export',
+									'deleted' => count( $ids ),
+								),
+								admin_url( 'admin.php' )
+							)
+						);
+						exit;
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Override bulk_delete method to properly delete actions
+	 *
+	 * @param array $ids Array of action IDs to delete
+	 * @param string $ids_sql SQL (unused but required by parent class signature)
+	 */
+	protected function bulk_delete( array $ids, $ids_sql ) {
+		foreach ( $ids as $action_id ) {
+			try {
+				$this->store->delete_action( $action_id );
+			} catch (Exception $e) {
+				// Log the error but continue with other deletions
+				error_log( sprintf( 'Failed to delete scheduled action %d: %s', $action_id, $e->getMessage() ) );
+			}
+		}
+	}
 }
 
 // Create our custom filtered list table with the required parameters
@@ -165,9 +341,10 @@ echo '<h1>' . esc_html__( 'Export Tasks', 'multisite-exporter' ) . '</h1>';
 echo '<p>' . esc_html__( 'This page shows only the export tasks for Multisite Exporter.', 'multisite-exporter' ) . '</p>';
 
 // Display search form and navigation
-echo '<form id="posts-filter" method="get">';
+echo '<form id="posts-filter" method="post">';
 echo '<input type="hidden" name="page" value="me-scheduled-actions">';
 echo '<input type="hidden" name="hook" value="me_process_site_export">'; // Always include hook in form
+wp_nonce_field( 'bulk-' . 'action-scheduler-actions' ); // Match the nonce name used in our bulk action handler
 
 // Display the views (status filters)
 $list_table->views();
