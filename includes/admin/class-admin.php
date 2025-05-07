@@ -51,8 +51,8 @@ class ME_Admin {
 		// Add menu
 		add_action( 'network_admin_menu', array( $this, 'add_admin_menu' ) );
 
-		// Register plugin styles
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_styles' ) );
+		// Register plugin assets (styles and scripts)
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 
 		// AJAX handlers
 		add_action( 'wp_ajax_me_download_export', array( $this, 'handle_export_download' ) );
@@ -60,20 +60,43 @@ class ME_Admin {
 	}
 
 	/**
-	 * Enqueue admin styles.
+	 * Enqueue admin assets (styles and scripts).
+	 * 
+	 * @param string $hook The current admin page hook.
 	 */
-	public function enqueue_admin_styles( $hook ) {
-		// Only load the CSS on our plugin pages
+	public function enqueue_admin_assets( $hook ) {
+		// Only load assets on our plugin pages
 		if ( strpos( $hook, 'multisite-exporter' ) === false ) {
 			return;
 		}
 
+		// Enqueue common styles
 		wp_enqueue_style(
 			'multisite-exporter-styles',
 			MULTISITE_EXPORTER_PLUGIN_URL . 'css/multisite-exporter.css',
 			array(),
 			filemtime( MULTISITE_EXPORTER_PLUGIN_DIR . 'css/multisite-exporter.css' )
 		);
+
+		// Enqueue common admin scripts
+		wp_enqueue_script(
+			'multisite-exporter-admin',
+			MULTISITE_EXPORTER_PLUGIN_URL . 'js/multisite-exporter-admin.js',
+			array( 'jquery' ),
+			filemtime( MULTISITE_EXPORTER_PLUGIN_DIR . 'js/multisite-exporter-admin.js' ),
+			true
+		);
+
+		// Enqueue page-specific scripts
+		if ( strpos( $hook, 'multisite-exporter-history' ) !== false ) {
+			wp_enqueue_script(
+				'multisite-exporter-history',
+				MULTISITE_EXPORTER_PLUGIN_URL . 'js/history-page.js',
+				array( 'jquery' ),
+				filemtime( MULTISITE_EXPORTER_PLUGIN_DIR . 'js/history-page.js' ),
+				true
+			);
+		}
 	}
 
 	/**

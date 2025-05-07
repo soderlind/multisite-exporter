@@ -131,8 +131,10 @@ $exports = array_slice( $all_exports, $offset, $per_page );
 
 							// Current page text input
 							printf(
-								'<span class="paging-input"><input class="current-page" id="current-page-selector" type="text" name="paged" value="%s" size="1" aria-describedby="table-paging"> %s <span class="total-pages">%s</span></span>',
+								'<span class="paging-input"><input class="current-page" id="current-page-selector" type="text" name="paged" value="%s" size="1" aria-describedby="table-paging" data-total-pages="%s" data-base-url="%s"> %s <span class="total-pages">%s</span></span>',
 								$current_page,
+								intval( $total_pages ),
+								esc_js( remove_query_arg( 'paged' ) ),
 								esc_html__( 'of', 'multisite-exporter' ),
 								number_format_i18n( $total_pages )
 							);
@@ -298,111 +300,6 @@ $exports = array_slice( $all_exports, $offset, $per_page );
 				</div>
 			<?php endif; ?>
 		</form>
-		<script type="text/javascript">
-			jQuery(document).ready(function ($) {
-				// Track "select all pages" state
-				var allPagesSelected = false;
-
-				// Select/deselect all checkboxes on current page
-				$('#cb-select-all').on('click', function () {
-					$('input[name="selected_exports[]"]').prop('checked', this.checked);
-					updateSelectAllPagesNotice(this.checked);
-				});
-
-				// Select all button (current page)
-				$('#select-all').on('click', function (e) {
-					e.preventDefault();
-					$('input[name="selected_exports[]"]').prop('checked', true);
-					$('#cb-select-all').prop('checked', true);
-					updateSelectAllPagesNotice(true);
-				});
-
-				// Deselect all button 
-				$('#deselect-all').on('click', function (e) {
-					e.preventDefault();
-					$('input[name="selected_exports[]"]').prop('checked', false);
-					$('#cb-select-all').prop('checked', false);
-					$('#select_all_pages').val(0);
-					updateSelectAllPagesNotice(false);
-					hideAllSelectedNotice();
-				});
-
-				// Select all exports across all pages
-				$('#select-across-pages').on('click', function (e) {
-					e.preventDefault();
-					$('#select_all_pages').val(1);
-					allPagesSelected = true;
-					showAllSelectedNotice();
-					hideSelectAllPagesNotice();
-				});
-
-				// Clear selection of all exports across pages
-				$('#clear-selection').on('click', function (e) {
-					e.preventDefault();
-					$('#select_all_pages').val(0);
-					allPagesSelected = false;
-					$('input[name="selected_exports[]"]').prop('checked', false);
-					$('#cb-select-all').prop('checked', false);
-					hideAllSelectedNotice();
-				});
-
-				// Show notice that all exports on current page are selected
-				function updateSelectAllPagesNotice(allChecked) {
-					if (allChecked && !allPagesSelected) {
-						showSelectAllPagesNotice();
-					} else {
-						hideSelectAllPagesNotice();
-					}
-				}
-
-				function showSelectAllPagesNotice() {
-					$('#select-all-pages-notice').removeClass('hidden').show();
-				}
-
-				function hideSelectAllPagesNotice() {
-					$('#select-all-pages-notice').addClass('hidden').hide();
-				}
-
-				function showAllSelectedNotice() {
-					$('#all-selected-notice').removeClass('hidden').show();
-				}
-
-				function hideAllSelectedNotice() {
-					$('#all-selected-notice').addClass('hidden').hide();
-				}
-
-				// Update header checkbox when individual checkboxes change
-				$('input[name="selected_exports[]"]').on('change', function () {
-					var allChecked = $('input[name="selected_exports[]"]:checked').length === $('input[name="selected_exports[]"]').length;
-					$('#cb-select-all').prop('checked', allChecked);
-					updateSelectAllPagesNotice(allChecked);
-
-					// If individual checkboxes are unchecked, we're not in "all pages selected" mode anymore
-					if (!$(this).prop('checked') && allPagesSelected) {
-						allPagesSelected = false;
-						$('#select_all_pages').val(0);
-						hideAllSelectedNotice();
-					}
-				});
-
-				// Handle manual page input submission
-				$('#current-page-selector').keydown(function (e) {
-					if (e.keyCode === 13) { // Enter key
-						e.preventDefault();
-						var page = parseInt($(this).val());
-						if (isNaN(page) || page < 1) {
-							page = 1;
-						} else if (page > <?php echo intval( $total_pages ); ?>) {
-							page = <?php echo intval( $total_pages ); ?>;
-						}
-
-						// If "select all pages" is active, preserve that when changing pages
-						var url = '<?php echo esc_js( remove_query_arg( 'paged' ) ); ?>&paged=' + page;
-						window.location.href = url;
-					}
-				});
-			});
-		</script>
 		<?php
 	} else {
 		echo '<p>' . esc_html__( 'No exports found.', 'multisite-exporter' ) . '</p>';
