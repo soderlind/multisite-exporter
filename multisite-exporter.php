@@ -658,18 +658,35 @@ function me_filter_as_sql_query( $sql ) {
  * Render the export history page
  */
 function me_exporter_history_page() {
+	// Get all exports
+	$all_exports = get_site_transient( 'multisite_exports' ) ?: array();
+	
+	// Pagination settings
+	$per_page = 10; // Number of exports to show per page
+	$current_page = isset( $_GET['paged'] ) ? max( 1, intval( $_GET['paged'] ) ) : 1;
+	$total_exports = count( $all_exports );
+	$total_pages = ceil( $total_exports / $per_page );
+	
+	// Ensure current page doesn't exceed total pages
+	if ( $current_page > $total_pages && $total_pages > 0 ) {
+		$current_page = $total_pages;
+	}
+	
+	// Calculate which exports to show on this page
+	$offset = ( $current_page - 1 ) * $per_page;
+	$exports = array_slice( $all_exports, $offset, $per_page );
+	
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Export History', 'multisite-exporter' ); ?></h1>
 		<?php
-		$exports = get_site_transient( 'multisite_exports' );
-
 		if ( ! empty( $exports ) ) {
 			?>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>" id="exports-form"
 				class="multisite-exporter-table">
 				<input type="hidden" name="action" value="me_download_selected_exports">
 				<?php wp_nonce_field( 'download_selected_exports', 'me_download_nonce' ); ?>
+				<input type="hidden" name="select_all_pages" id="select_all_pages" value="0">
 
 				<div class="tablenav top">
 					<div class="alignleft actions bulkactions">
@@ -682,6 +699,123 @@ function me_exporter_history_page() {
 						<a href="#" class="button"
 							id="deselect-all"><?php esc_html_e( 'Deselect All', 'multisite-exporter' ); ?></a>
 					</div>
+					
+					<div id="select-all-pages-notice" class="alignleft hidden" style="margin-left: 10px; padding: 5px; background-color: #f7f7f7; border: 1px solid #ccc; display: none;">
+						<span>
+							<?php 
+							printf(
+								/* translators: %1$d: Number of items on current page, %2$d: Total number of items */
+								esc_html__( 'All %1$d exports on this page are selected. ', 'multisite-exporter' ),
+								count( $exports )
+							);
+							?>
+						</span>
+						<a href="#" id="select-across-pages">
+							<?php 
+							printf(
+								/* translators: %d: Total number of items */
+								esc_html__( 'Select all %d exports across all pages', 'multisite-exporter' ),
+								$total_exports
+							);
+							?>
+						</a>
+					</div>
+					
+					<div id="all-selected-notice" class="alignleft hidden" style="margin-left: 10px; padding: 5px; background-color: #f7f7f7; border: 1px solid #ccc; display: none;">
+						<?php 
+						printf(
+							/* translators: %d: Total number of items */
+							esc_html__( 'All %d exports across all pages are selected. ', 'multisite-exporter' ),
+							$total_exports
+						);
+						?>
+						<a href="#" id="clear-selection"><?php esc_html_e( 'Clear selection', 'multisite-exporter' ); ?></a>
+					</div>
+					
+					<?php if ( $total_pages > 1 ) : ?>
+					<div class="tablenav-pages">
+						<span class="displaying-num">
+							<?php 
+							printf( 
+								/* translators: %s: Number of exports */
+								_n( '%s export', '%s exports', $total_exports, 'multisite-exporter' ), 
+								number_format_i18n( $total_exports ) 
+							); 
+							?>
+						</span>
+						<span class="pagination-links">
+							<?php
+							// First page link
+							if ( $current_page > 1 ) {
+								printf(
+									'<a class="first-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
+									esc_url( add_query_arg( 'paged', 1 ) ),
+									esc_html__( 'First page', 'multisite-exporter' ),
+									'&laquo;'
+								);
+							} else {
+								printf(
+									'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
+									'&laquo;'
+								);
+							}
+							
+							// Previous page link
+							if ( $current_page > 1 ) {
+								printf(
+									'<a class="prev-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
+									esc_url( add_query_arg( 'paged', max( 1, $current_page - 1 ) ) ),
+									esc_html__( 'Previous page', 'multisite-exporter' ),
+									'&lsaquo;'
+								);
+							} else {
+								printf(
+									'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
+									'&lsaquo;'
+								);
+							}
+							
+							// Current page text input
+							printf(
+								'<span class="paging-input"><input class="current-page" id="current-page-selector" type="text" name="paged" value="%s" size="1" aria-describedby="table-paging"> %s <span class="total-pages">%s</span></span>',
+								$current_page,
+								esc_html__( 'of', 'multisite-exporter' ),
+								number_format_i18n( $total_pages )
+							);
+							
+							// Next page link
+							if ( $current_page < $total_pages ) {
+								printf(
+									'<a class="next-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
+									esc_url( add_query_arg( 'paged', min( $total_pages, $current_page + 1 ) ) ),
+									esc_html__( 'Next page', 'multisite-exporter' ),
+									'&rsaquo;'
+								);
+							} else {
+								printf(
+									'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
+									'&rsaquo;'
+								);
+							}
+							
+							// Last page link
+							if ( $current_page < $total_pages ) {
+								printf(
+									'<a class="last-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
+									esc_url( add_query_arg( 'paged', $total_pages ) ),
+									esc_html__( 'Last page', 'multisite-exporter' ),
+									'&raquo;'
+								);
+							} else {
+								printf(
+									'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
+									'&raquo;'
+								);
+							}
+							?>
+						</span>
+					</div>
+					<?php endif; ?>
 				</div>
 
 				<table class="widefat fixed" style="margin-top: 20px;">
@@ -722,32 +856,196 @@ function me_exporter_history_page() {
 						?>
 					</tbody>
 				</table>
+				
+				<?php if ( $total_pages > 1 ) : ?>
+				<div class="tablenav bottom">
+					<div class="tablenav-pages">
+						<span class="displaying-num">
+							<?php 
+							printf( 
+								/* translators: %s: Number of exports */
+								_n( '%s export', '%s exports', $total_exports, 'multisite-exporter' ), 
+								number_format_i18n( $total_exports ) 
+							); 
+							?>
+						</span>
+						<span class="pagination-links">
+							<?php
+							// First page link
+							if ( $current_page > 1 ) {
+								printf(
+									'<a class="first-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
+									esc_url( add_query_arg( 'paged', 1 ) ),
+									esc_html__( 'First page', 'multisite-exporter' ),
+									'&laquo;'
+								);
+							} else {
+								printf(
+									'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
+									'&laquo;'
+								);
+							}
+							
+							// Previous page link
+							if ( $current_page > 1 ) {
+								printf(
+									'<a class="prev-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
+									esc_url( add_query_arg( 'paged', max( 1, $current_page - 1 ) ) ),
+									esc_html__( 'Previous page', 'multisite-exporter' ),
+									'&lsaquo;'
+								);
+							} else {
+								printf(
+									'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
+									'&lsaquo;'
+								);
+							}
+							
+							// Current page text
+							printf(
+								'<span class="paging-input">%s %s <span class="total-pages">%s</span></span>',
+								$current_page,
+								esc_html__( 'of', 'multisite-exporter' ),
+								number_format_i18n( $total_pages )
+							);
+							
+							// Next page link
+							if ( $current_page < $total_pages ) {
+								printf(
+									'<a class="next-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
+									esc_url( add_query_arg( 'paged', min( $total_pages, $current_page + 1 ) ) ),
+									esc_html__( 'Next page', 'multisite-exporter' ),
+									'&rsaquo;'
+								);
+							} else {
+								printf(
+									'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
+									'&rsaquo;'
+								);
+							}
+							
+							// Last page link
+							if ( $current_page < $total_pages ) {
+								printf(
+									'<a class="last-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
+									esc_url( add_query_arg( 'paged', $total_pages ) ),
+									esc_html__( 'Last page', 'multisite-exporter' ),
+									'&raquo;'
+								);
+							} else {
+								printf(
+									'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
+									'&raquo;'
+								);
+							}
+							?>
+						</span>
+					</div>
+				</div>
+				<?php endif; ?>
 			</form>
 			<script type="text/javascript">
 				jQuery(document).ready(function ($) {
-					// Select/deselect all checkboxes
+					// Track "select all pages" state
+					var allPagesSelected = false;
+					
+					// Select/deselect all checkboxes on current page
 					$('#cb-select-all').on('click', function () {
 						$('input[name="selected_exports[]"]').prop('checked', this.checked);
+						updateSelectAllPagesNotice(this.checked);
 					});
 
-					// Select all button
+					// Select all button (current page)
 					$('#select-all').on('click', function (e) {
 						e.preventDefault();
 						$('input[name="selected_exports[]"]').prop('checked', true);
 						$('#cb-select-all').prop('checked', true);
+						updateSelectAllPagesNotice(true);
 					});
 
-					// Deselect all button
+					// Deselect all button 
 					$('#deselect-all').on('click', function (e) {
 						e.preventDefault();
 						$('input[name="selected_exports[]"]').prop('checked', false);
 						$('#cb-select-all').prop('checked', false);
+						$('#select_all_pages').val(0);
+						updateSelectAllPagesNotice(false);
+						hideAllSelectedNotice();
 					});
+					
+					// Select all exports across all pages
+					$('#select-across-pages').on('click', function(e) {
+						e.preventDefault();
+						$('#select_all_pages').val(1);
+						allPagesSelected = true;
+						showAllSelectedNotice();
+						hideSelectAllPagesNotice();
+					});
+					
+					// Clear selection of all exports across pages
+					$('#clear-selection').on('click', function(e) {
+						e.preventDefault();
+						$('#select_all_pages').val(0);
+						allPagesSelected = false;
+						$('input[name="selected_exports[]"]').prop('checked', false);
+						$('#cb-select-all').prop('checked', false);
+						hideAllSelectedNotice();
+					});
+					
+					// Show notice that all exports on current page are selected
+					function updateSelectAllPagesNotice(allChecked) {
+						if (allChecked && !allPagesSelected) {
+							showSelectAllPagesNotice();
+						} else {
+							hideSelectAllPagesNotice();
+						}
+					}
+					
+					function showSelectAllPagesNotice() {
+						$('#select-all-pages-notice').removeClass('hidden').show();
+					}
+					
+					function hideSelectAllPagesNotice() {
+						$('#select-all-pages-notice').addClass('hidden').hide();
+					}
+					
+					function showAllSelectedNotice() {
+						$('#all-selected-notice').removeClass('hidden').show();
+					}
+					
+					function hideAllSelectedNotice() {
+						$('#all-selected-notice').addClass('hidden').hide();
+					}
 
 					// Update header checkbox when individual checkboxes change
 					$('input[name="selected_exports[]"]').on('change', function () {
 						var allChecked = $('input[name="selected_exports[]"]:checked').length === $('input[name="selected_exports[]"]').length;
 						$('#cb-select-all').prop('checked', allChecked);
+						updateSelectAllPagesNotice(allChecked);
+						
+						// If individual checkboxes are unchecked, we're not in "all pages selected" mode anymore
+						if (!$(this).prop('checked') && allPagesSelected) {
+							allPagesSelected = false;
+							$('#select_all_pages').val(0);
+							hideAllSelectedNotice();
+						}
+					});
+					
+					// Handle manual page input submission
+					$('#current-page-selector').keydown(function(e) {
+						if (e.keyCode === 13) { // Enter key
+							e.preventDefault();
+							var page = parseInt($(this).val());
+							if (isNaN(page) || page < 1) {
+								page = 1;
+							} else if (page > <?php echo intval($total_pages); ?>) {
+								page = <?php echo intval($total_pages); ?>;
+							}
+							
+							// If "select all pages" is active, preserve that when changing pages
+							var url = '<?php echo esc_js(remove_query_arg('paged')); ?>&paged=' + page;
+							window.location.href = url;
+						}
 					});
 				});
 			</script>
@@ -801,89 +1099,89 @@ function me_handle_export_download() {
 /**
  * Handle the download of multiple selected export files as a zip archive
  */
-add_action( 'wp_ajax_me_download_selected_exports', 'me_handle_selected_exports_download' );
-function me_handle_selected_exports_download() {
-	// Check if user has permission
-	if ( ! current_user_can( 'manage_network' ) ) {
-		wp_die( 'You do not have permission to access these files.' );
+add_action( 'wp_ajax_me_download_selected_exports', 'me_download_selected_exports' );
+function me_download_selected_exports() {
+	// Check nonce for security
+	if ( ! isset( $_POST['me_download_nonce'] ) || ! wp_verify_nonce( $_POST['me_download_nonce'], 'download_selected_exports' ) ) {
+		wp_die( esc_html__( 'Security check failed.', 'multisite-exporter' ) );
 	}
 
-	// Verify nonce
-	if ( ! isset( $_POST[ 'me_download_nonce' ] ) || ! wp_verify_nonce( $_POST[ 'me_download_nonce' ], 'download_selected_exports' ) ) {
-		wp_die( 'Security check failed.' );
+	// Check if we're selecting all exports across all pages
+	$select_all_pages = isset( $_POST['select_all_pages'] ) && $_POST['select_all_pages'] == '1';
+
+	// Get selected exports or all exports if select_all_pages is true
+	$all_exports = get_site_transient( 'multisite_exports' ) ?: array();
+	
+	if ( $select_all_pages ) {
+		// Use all available exports
+		$selected = array_column( $all_exports, 'file_name' );
+	} else {
+		// Use only explicitly selected exports
+		$selected = isset( $_POST['selected_exports'] ) ? (array) $_POST['selected_exports'] : array();
 	}
 
-	// Get selected export files
-	$selected_exports = isset( $_POST[ 'selected_exports' ] ) ? (array) $_POST[ 'selected_exports' ] : [];
+	// Ensure we have selected exports
+	if ( empty( $selected ) ) {
+		wp_die( esc_html__( 'No exports selected.', 'multisite-exporter' ) );
+	}
 
-	// If no files were selected, redirect back with an error message
-	if ( empty( $selected_exports ) ) {
-		wp_redirect( add_query_arg( 'error', 'no-selection', admin_url( 'admin.php?page=multisite-exporter-history' ) ) );
+	// If there's only one file selected, just download it directly
+	if ( count( $selected ) === 1 ) {
+		$file_name = $selected[0];
+		me_download_export_file( $file_name );
 		exit;
 	}
 
-	// Get the export directory path
-	$export_dir = me_get_export_directory();
-
-	// Create a temporary file for the zip
-	$zip_filename = 'multisite-exports-' . date( 'Ymd-His' ) . '.zip';
-	$zip_filepath = trailingslashit( get_temp_dir() ) . $zip_filename;
-
-	// Create new zip archive
+	// Create a zip file containing all selected exports
 	$zip = new ZipArchive();
-	if ( $zip->open( $zip_filepath, ZipArchive::CREATE ) !== true ) {
-		wp_die( 'Could not create ZIP file.' );
+	$temp_file = tempnam( sys_get_temp_dir(), 'me_exports_' );
+
+	if ( $zip->open( $temp_file, ZipArchive::CREATE ) !== true ) {
+		wp_die( esc_html__( 'Could not create ZIP file.', 'multisite-exporter' ) );
 	}
 
-	// Get available exports from transient
-	$available_exports = get_site_transient( 'multisite_exports' ) ?: [];
-	$file_map          = [];
+	// Directory structure to look for export files
+	$export_dirs = array(
+		WP_CONTENT_DIR . '/uploads/multisite-exports/',
+		// Add any other directories you might use for export files
+	);
 
-	// Create a lookup map for file names to file paths
-	foreach ( $available_exports as $export ) {
-		$file_map[ $export[ 'file_name' ] ] = $export;
-	}
+	$found_files = array();
 
-	// Add selected files to the zip archive
-	foreach ( $selected_exports as $file_name ) {
-		// Sanitize the file name
-		$file_name = sanitize_file_name( $file_name );
-
-		// Make sure the file exists in our tracked exports
-		if ( isset( $file_map[ $file_name ] ) ) {
-			$file_path = trailingslashit( $export_dir ) . $file_name;
-
-			// Check if file exists
+	// Add files to the zip
+	foreach ( $selected as $file_name ) {
+		foreach ( $export_dirs as $dir ) {
+			$file_path = $dir . $file_name;
 			if ( file_exists( $file_path ) ) {
-				// Add file to zip with filename as is
 				$zip->addFile( $file_path, $file_name );
+				$found_files[] = $file_name;
+				break;
 			}
 		}
 	}
 
-	// Close the zip file
-	$zip->close();
-
-	// Check if file was created successfully
-	if ( ! file_exists( $zip_filepath ) ) {
-		wp_die( 'Error creating ZIP file.' );
+	// Check if we found all files
+	if ( count( $found_files ) !== count( $selected ) ) {
+		$missing = array_diff( $selected, $found_files );
+		$error_message = sprintf(
+			/* translators: %s: Comma-separated list of missing files */
+			esc_html__( 'Could not find some export files: %s', 'multisite-exporter' ),
+			implode( ', ', $missing )
+		);
+		wp_die( $error_message );
 	}
 
-	// Set headers for download
-	header( 'Content-Description: File Transfer' );
+	$zip->close();
+
+	// Output the zip file
 	header( 'Content-Type: application/zip' );
-	header( 'Content-Disposition: attachment; filename="' . basename( $zip_filepath ) . '"' );
-	header( 'Content-Length: ' . filesize( $zip_filepath ) );
-	header( 'Cache-Control: must-revalidate' );
-	header( 'Pragma: public' );
+	header( 'Content-Disposition: attachment; filename="multisite-exports-' . date( 'Y-m-d' ) . '.zip"' );
+	header( 'Content-Length: ' . filesize( $temp_file ) );
+	header( 'Pragma: no-cache' );
 	header( 'Expires: 0' );
-
-	// Output file
-	readfile( $zip_filepath );
-
-	// Delete the temporary file
-	unlink( $zip_filepath );
-
+	
+	readfile( $temp_file );
+	unlink( $temp_file );
 	exit;
 }
 

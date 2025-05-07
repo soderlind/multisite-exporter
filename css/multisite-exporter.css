@@ -25,3 +25,73 @@
 .multisite-exporter-table .tablenav .button {
 	margin-right: 5px;
 }
+
+/* General styles for the export table */
+.me-export-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-bottom: 20px;
+}
+
+.me-export-table th,
+.me-export-table td {
+	padding: 8px 12px;
+	text-align: left;
+	vertical-align: middle;
+	border-bottom: 1px solid #e5e5e5;
+}
+
+.me-export-table th {
+	background-color: #f9f9f9;
+}
+
+/* Styles for the selection controls */
+.me-selection-controls {
+	display: flex;
+	align-items: center;
+	margin-bottom: 15px;
+	padding: 10px;
+	background: #f9f9f9;
+	border: 1px solid #e5e5e5;
+	border-radius: 4px;
+}
+
+.me-selection-controls label {
+	margin-right: 20px;
+	display: flex;
+	align-items: center;
+}
+
+.me-selection-controls input[type="checkbox"] {
+	margin-right: 5px;
+}
+
+.me-selection-controls .me-bulk-actions {
+	margin-left: auto;
+}
+
+.me-select-all-pages-info {
+	padding: 5px 10px;
+	background-color: #f0f6ff;
+	border-left: 4px solid #2271b1;
+	margin: 10px 0;
+	font-size: 13px;
+	display: none;
+}
+
+.me-selected-count-wrapper {
+	margin-right: 10px;
+	font-size: 13px;
+	color: #606060;
+}
+
+.me-selected-count {
+	font-weight: bold;
+	color: #2271b1;
+}
+
+/* Button styles */
+.button-disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
