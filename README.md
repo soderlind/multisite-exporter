@@ -149,9 +149,6 @@ To create a translation:
 3. Translate using a tool like Poedit
 4. Save both .po and .mo files to the languages directory
 
-## License
-
-This plugin is licensed under the GPL v2 or later.
 
 ## Debugging
 
@@ -196,6 +193,11 @@ define( 'WP_DEBUG_DISPLAY', false );
 
 This configuration will log all errors to the debug.log file without displaying them on screen.
 
-## Author
+## Copyright and License
 
-[Per Søderlind](https://soderlind.no)
+Multisite Exporter is copyright © 2025 [Per Søderlind](http://github.com/soderlind).
+
+Multisite Exporter is open-source software; you can redistribute it and/or modify it under the terms of the GNU General Public License, version 2, as published by the Free Software Foundation.
+
+Multisite Exporter is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See [LICENSE](LICENSE) for more information.
+
