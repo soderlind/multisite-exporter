@@ -1,0 +1,143 @@
+# Copyright (C) 2025 Per Søderlind
+# This file is distributed under the GPL2.
+msgid ""
+msgstr ""
+"Project-Id-Version: Multisite Exporter 1.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/multisite-exporter\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2025-05-07T00:07:46+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.11.0\n"
+"X-Domain: multisite-exporter\n"
+
+#. Plugin Name of the plugin
+#: multisite-exporter.php
+#: multisite-exporter.php:683
+msgid "Multisite Exporter"
+msgstr ""
+
+#. Description of the plugin
+#: multisite-exporter.php
+msgid "Runs WordPress Exporter on each subsite in a multisite, in the background."
+msgstr ""
+
+#. Author of the plugin
+#: multisite-exporter.php
+msgid "Per Søderlind"
+msgstr ""
+
+#. Author URI of the plugin
+#: multisite-exporter.php
+msgid "https://soderlind.no"
+msgstr ""
+
+#: multisite-exporter.php:23
+msgid "Multisite Exporter only works on multisite installations."
+msgstr ""
+
+#: multisite-exporter.php:41
+msgid "Action Scheduler is required for Multisite Exporter to work. Please run composer install."
+msgstr ""
+
+#: multisite-exporter.php:442
+#: multisite-exporter.php:679
+#: multisite-exporter.php:686
+msgid "Export History"
+msgstr ""
+
+#: multisite-exporter.php:456
+msgid "Download Selected"
+msgstr ""
+
+#: multisite-exporter.php:460
+msgid "Select All"
+msgstr ""
+
+#: multisite-exporter.php:462
+msgid "Deselect All"
+msgstr ""
+
+#: multisite-exporter.php:470
+msgid "Blog ID"
+msgstr ""
+
+#: multisite-exporter.php:471
+msgid "Site Name"
+msgstr ""
+
+#: multisite-exporter.php:472
+msgid "Export File"
+msgstr ""
+
+#: multisite-exporter.php:473
+msgid "Date"
+msgstr ""
+
+#: multisite-exporter.php:474
+msgid "Actions"
+msgstr ""
+
+#: multisite-exporter.php:498
+msgid "Download"
+msgstr ""
+
+#: multisite-exporter.php:535
+msgid "No exports found."
+msgstr ""
+
+#: multisite-exporter.php:679
+msgid "Export has been scheduled for all subsites! View results in the"
+msgstr ""
+
+#: multisite-exporter.php:679
+#: multisite-exporter.php:687
+msgid "page."
+msgstr ""
+
+#: multisite-exporter.php:684
+msgid "This tool exports content from all subsites in your multisite installation. Exports are saved to a common folder and can be downloaded from the"
+msgstr ""
+
+#: multisite-exporter.php:692
+msgid "Content"
+msgstr ""
+
+#: multisite-exporter.php:695
+msgid "All Content"
+msgstr ""
+
+#: multisite-exporter.php:696
+msgid "Posts"
+msgstr ""
+
+#: multisite-exporter.php:697
+msgid "Pages"
+msgstr ""
+
+#: multisite-exporter.php:698
+msgid "Media"
+msgstr ""
+
+#: multisite-exporter.php:703
+msgid "Post Type (optional)"
+msgstr ""
+
+#: multisite-exporter.php:705
+msgid "e.g., product"
+msgstr ""
+
+#: multisite-exporter.php:708
+msgid "Start Date (YYYY-MM-DD)"
+msgstr ""
+
+#: multisite-exporter.php:712
+msgid "End Date (YYYY-MM-DD)"
+msgstr ""
+
+#: multisite-exporter.php:716
+msgid "Run Export for All Subsites"
+msgstr ""
