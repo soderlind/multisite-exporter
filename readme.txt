@@ -27,8 +27,8 @@ Multisite Exporter is a powerful tool for WordPress multisite administrators who
 = Requirements =
 
 * WordPress Multisite installation
-* PHP 7.0 or higher
-* Action Scheduler library (included via Composer in vendor/woocommerce/action-scheduler/)
+* PHP 8.2 or higher
+* Action Scheduler library (included with the plugin)
 
 == Installation ==
 
