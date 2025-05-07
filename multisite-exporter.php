@@ -351,8 +351,8 @@ function me_generate_export( $args = [] ) {
 			$output .= "\t\t\t<wp:comment_content>" . me_wxr_cdata( $comment->comment_content ) . "</wp:comment_content>\n";
 			$output .= "\t\t\t<wp:comment_approved>" . me_wxr_cdata( $comment->comment_approved ) . "</wp:comment_approved>\n";
 			$output .= "\t\t\t<wp:comment_type>" . me_wxr_cdata( $comment->comment_type ) . "</wp:comment_type>\n";
-			$output .= "\t\t\t<wp:comment_parent>" . $comment->comment_parent . "</wp:comment_parent>\n";
-			$output .= "\t\t\t<wp:comment_user_id>" . $comment->user_id . "</wp:comment_user_id>\n";
+			$output .= "\t\t\t<wp:comment_parent>" . $comment->comment_parent . '</wp:comment_parent>';
+			$output .= "\t\t\t<wp:comment_user_id>" . $comment->user_id . '</wp:comment_user_id>';
 
 			// Comment meta
 			$commentmeta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $wpdb->commentmeta WHERE comment_id = %d", $comment->comment_ID ) );
@@ -440,6 +440,71 @@ function me_add_admin_menu() {
 		'multisite-exporter-history', // Menu slug
 		'me_exporter_history_page' // Callback function
 	);
+
+	// Add submenu for Action Scheduler admin
+	add_submenu_page(
+		'multisite-exporter',          // Parent slug
+		esc_html__( 'Scheduled Actions', 'multisite-exporter' ), // Page title
+		esc_html__( 'Scheduled Actions', 'multisite-exporter' ), // Menu title
+		'manage_network',              // Capability
+		'me-scheduled-actions',        // Menu slug - unique to avoid conflicts
+		'me_action_scheduler_admin_page' // Callback function
+	);
+}
+
+/**
+ * Display the Action Scheduler admin screen under our own menu
+ */
+function me_action_scheduler_admin_page() {
+	// Check if Action Scheduler is available
+	if ( ! class_exists( 'ActionScheduler_AdminView' ) ) {
+		echo '<div class="wrap"><h1>' . esc_html__( 'Scheduled Actions', 'multisite-exporter' ) . '</h1>';
+		echo '<div class="error"><p>' . esc_html__( 'Action Scheduler is not available. Please make sure it is properly installed.', 'multisite-exporter' ) . '</p></div>';
+		echo '</div>';
+		return;
+	}
+
+	// Start output buffering to capture the original admin UI
+	ob_start();
+
+	// Hook into the screen options based on our custom page
+	add_filter( 'screen_settings', function ($screen_settings, $screen) {
+		if ( 'multisite-exporter_page_me-scheduled-actions' === $screen->id ) {
+			// Define the current screen as the actions page
+			set_current_screen( 'tools_page_action-scheduler' );
+		}
+		return $screen_settings;
+	}, 10, 2 );
+
+	// This is where we'll temporarily replace the $_GET['page'] value
+	// Save the original value
+	$original_page = $_GET[ 'page' ] ?? '';
+
+	// Replace with Action Scheduler's expected value
+	$_GET[ 'page' ] = 'action-scheduler';
+
+	// Get the ActionScheduler_AdminView instance and render the UI
+	$admin_view = ActionScheduler_AdminView::instance();
+
+	// Call the public method to render the UI
+	$admin_view->render_admin_ui();
+
+	// Restore the original page value
+	$_GET[ 'page' ] = $original_page;
+
+	// Get the buffered content
+	$content = ob_get_clean();
+
+	// Output the content with our own wrap
+	echo '<div class="wrap">';
+	echo '<h1>' . esc_html__( 'Scheduled Actions', 'multisite-exporter' ) . '</h1>';
+
+	// Extract and display just the content without the extra headings from Action Scheduler
+	// This removes the duplicate heading but keeps the functional parts
+	$content = preg_replace( '/<h1>.*?<\/h1>/', '', $content );
+	echo $content;
+
+	echo '</div>';
 }
 
 /**
