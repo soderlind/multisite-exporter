@@ -11,6 +11,27 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Register deletion success notice to show in admin
+ * 
+ * @param int $deleted_count Number of items deleted
+ * @return void
+ */
+function me_register_deletion_notice( $deleted_count ) {
+	add_action( 'admin_notices', function () use ($deleted_count) {
+		$message = sprintf(
+			_n(
+				'%s scheduled action deleted successfully.',
+				'%s scheduled actions deleted successfully.',
+				$deleted_count,
+				'multisite-exporter'
+			),
+			number_format_i18n( $deleted_count )
+		);
+		echo '<div class="updated notice is-dismissible"><p>' . esc_html( $message ) . '</p></div>';
+	} );
+}
+
 // Check if Action Scheduler is available
 if ( ! class_exists( 'ActionScheduler_AdminView' ) ) {
 	echo '<div class="wrap"><h1>' . esc_html__( 'Scheduled Actions', 'multisite-exporter' ) . '</h1>';
@@ -51,18 +72,7 @@ if ( isset( $_POST[ '_wpnonce' ] ) && ( isset( $_POST[ 'action' ] ) && $_POST[ '
 				exit;
 			} else {
 				// If headers already sent, we'll show the notice immediately
-				add_action( 'admin_notices', function () use ($deleted_count) {
-					$message = sprintf(
-						_n(
-							'%s scheduled action deleted successfully.',
-							'%s scheduled actions deleted successfully.',
-							$deleted_count,
-							'multisite-exporter'
-						),
-						number_format_i18n( $deleted_count )
-					);
-					echo '<div class="updated notice is-dismissible"><p>' . esc_html( $message ) . '</p></div>';
-				} );
+				me_register_deletion_notice( $deleted_count );
 			}
 		}
 	}
@@ -75,19 +85,8 @@ if ( ( isset( $_GET[ 'deleted' ] ) && intval( $_GET[ 'deleted' ] ) > 0 ) ||
 	// Get the count from either parameter and store it in a local variable
 	$deleted_count = isset( $_GET[ 'deleted' ] ) ? intval( $_GET[ 'deleted' ] ) : intval( $_GET[ 'deleted_count' ] );
 
-	// Use the local variable instead of the superglobal in the closure
-	add_action( 'admin_notices', function () use ($deleted_count) {
-		$message = sprintf(
-			_n(
-				'%s scheduled action deleted successfully.',
-				'%s scheduled actions deleted successfully.',
-				$deleted_count,
-				'multisite-exporter'
-			),
-			number_format_i18n( $deleted_count )
-		);
-		echo '<div class="updated notice is-dismissible"><p>' . esc_html( $message ) . '</p></div>';
-	} );
+	// Use the shared function to register the notice
+	me_register_deletion_notice( $deleted_count );
 }
 
 // Add a strong filter directly to the data store's query method

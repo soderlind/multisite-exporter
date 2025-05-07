@@ -264,9 +264,15 @@ class ME_Admin {
 		}
 
 		// Create a zip file containing all selected exports
-		$zip       = new ZipArchive();
-		$temp_file = tempnam( sys_get_temp_dir(), 'me_exports_' );
+		$zip = new ZipArchive();
 
+		// Fix for PHP 8.2+ deprecation warning:
+		// Instead of using tempnam() which creates an empty file,
+		// we'll create a unique temporary filename without creating the file first
+		$temp_dir  = sys_get_temp_dir();
+		$temp_file = $temp_dir . DIRECTORY_SEPARATOR . 'me_exports_' . uniqid() . '.zip';
+
+		// Now open the file with the CREATE flag
 		if ( $zip->open( $temp_file, ZipArchive::CREATE ) !== true ) {
 			wp_die( esc_html__( 'Could not create ZIP file.', 'multisite-exporter' ) );
 		}
@@ -313,90 +319,28 @@ class ME_Admin {
 	}
 
 	/**
-	 * Check for active scheduled exports via AJAX
+	 * Get export progress data for AJAX requests
+	 * 
+	 * Shared helper method for both check_scheduled_exports and check_scheduled_progress
+	 * Eliminates duplicate code and centralizes the progress data collection logic
+	 * 
+	 * @return array Progress data array with uniform structure
 	 */
-	public function check_scheduled_exports() {
-		// Verify nonce
-		if ( ! check_ajax_referer( 'multisite_exporter_progress_nonce', 'security', false ) ) {
-			wp_send_json_error( array( 'message' => __( 'Security check failed', 'multisite-exporter' ) ) );
-			return;
-		}
-
-		// Check capabilities
-		if ( ! current_user_can( 'manage_network' ) ) {
-			wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action', 'multisite-exporter' ) ) );
-			return;
-		}
-
-		// Get active exports from Action Scheduler
-		$active_exports     = $this->get_active_export_actions();
-		$has_active_exports = ! empty( $active_exports );
-
-		// Get progress data
-		$progress_data = array(
-			'has_active_exports'   => $has_active_exports,
-			'percentage'           => 0,
-			'current_site'         => '',
-			'current_site_message' => __( 'Currently exporting site', 'multisite-exporter' ),
-			'scheduled_info'       => '',
-			'status'               => 'in_progress',
-		);
-
-		if ( $has_active_exports ) {
-			// Get the export batch ID from the first action
-			$first_action = reset( $active_exports );
-			$batch_id     = $first_action->get_args()[ 0 ] ?? '';
-
-			// Get progress data from network option
-			$export_progress = get_network_option( get_main_network_id(), 'multisite_exporter_progress_' . $batch_id, array() );
-
-			if ( ! empty( $export_progress ) ) {
-				$progress_data[ 'percentage' ]   = $export_progress[ 'percentage' ] ?? 0;
-				$progress_data[ 'current_site' ] = $export_progress[ 'current_site' ] ?? '';
-				$progress_data[ 'status' ]       = $export_progress[ 'status' ] ?? 'in_progress';
-
-				// Calculate scheduled actions info
-				$total_actions                     = count( $active_exports );
-				$scheduled_info                    = sprintf(
-					__( '%d sites pending export', 'multisite-exporter' ),
-					$total_actions
-				);
-				$progress_data[ 'scheduled_info' ] = $scheduled_info;
-			}
-		}
-
-		wp_send_json_success( $progress_data );
-	}
-
-	/**
-	 * Check for progress updates via AJAX
-	 */
-	public function check_scheduled_progress() {
-		// Verify nonce
-		if ( ! check_ajax_referer( 'multisite_exporter_progress_nonce', 'security', false ) ) {
-			wp_send_json_error( array( 'message' => __( 'Security check failed', 'multisite-exporter' ) ) );
-			return;
-		}
-
-		// Check capabilities
-		if ( ! current_user_can( 'manage_network' ) ) {
-			wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action', 'multisite-exporter' ) ) );
-			return;
-		}
-
-		// Get active exports from Action Scheduler
-		$active_exports     = $this->get_active_export_actions();
-		$has_active_exports = ! empty( $active_exports );
-
+	private function get_export_progress_data() {
 		// Default progress data
 		$progress_data = array(
-			'has_active_exports'   => $has_active_exports,
+			'has_active_exports'   => false,
 			'percentage'           => 0,
 			'current_site'         => '',
 			'current_site_message' => __( 'Currently exporting site', 'multisite-exporter' ),
 			'scheduled_info'       => '',
 			'status'               => 'in_progress',
 		);
+
+		// Get active exports from Action Scheduler
+		$active_exports                        = $this->get_active_export_actions();
+		$has_active_exports                    = ! empty( $active_exports );
+		$progress_data[ 'has_active_exports' ] = $has_active_exports;
 
 		if ( $has_active_exports ) {
 			// Get the export batch ID from the first action
@@ -437,6 +381,50 @@ class ME_Admin {
 				}
 			}
 		}
+
+		return $progress_data;
+	}
+
+	/**
+	 * Check for active scheduled exports via AJAX
+	 */
+	public function check_scheduled_exports() {
+		// Verify nonce
+		if ( ! check_ajax_referer( 'multisite_exporter_progress_nonce', 'security', false ) ) {
+			wp_send_json_error( array( 'message' => __( 'Security check failed', 'multisite-exporter' ) ) );
+			return;
+		}
+
+		// Check capabilities
+		if ( ! current_user_can( 'manage_network' ) ) {
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action', 'multisite-exporter' ) ) );
+			return;
+		}
+
+		// Get progress data from the shared helper method
+		$progress_data = $this->get_export_progress_data();
+
+		wp_send_json_success( $progress_data );
+	}
+
+	/**
+	 * Check for progress updates via AJAX
+	 */
+	public function check_scheduled_progress() {
+		// Verify nonce
+		if ( ! check_ajax_referer( 'multisite_exporter_progress_nonce', 'security', false ) ) {
+			wp_send_json_error( array( 'message' => __( 'Security check failed', 'multisite-exporter' ) ) );
+			return;
+		}
+
+		// Check capabilities
+		if ( ! current_user_can( 'manage_network' ) ) {
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action', 'multisite-exporter' ) ) );
+			return;
+		}
+
+		// Get progress data from the shared helper method
+		$progress_data = $this->get_export_progress_data();
 
 		wp_send_json_success( $progress_data );
 	}
