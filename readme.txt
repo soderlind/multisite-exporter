@@ -1,8 +1,8 @@
 === Multisite Exporter ===
-Contributors: PerS
+Contributors: persoderlind
 Tags: multisite, export, background processing, action scheduler
 Requires at least: 5.0
-Tested up to: 6.8
+Tested up to: 6.4
 Requires PHP: 7.0
 Stable tag: 1.0.0
 License: GPLv2 or later
@@ -22,6 +22,7 @@ Multisite Exporter is a powerful tool for WordPress multisite administrators who
 * **Bulk Downloads**: Select multiple export files and download them as a single zip file
 * **User-Friendly Interface**: Simple, intuitive interface for configuring exports and accessing files
 * **Fully Translatable**: The plugin is fully internationalized and ready for translation
+* **Customizable Export Directory**: Change where your exports are stored using a simple filter hook
 
 = Requirements =
 
@@ -57,12 +58,26 @@ Multisite Exporter is a powerful tool for WordPress multisite administrators who
    * Select multiple exports using checkboxes and click "Download Selected" to get a zip file
    * Use "Select All" and "Download Selected" to download all exports at once
 
+= Customizing Export Directory =
+
+You can change the default export directory location by adding this code to your theme's functions.php file or a custom plugin:
+
+`
+// Change the directory where exports are stored
+add_filter( 'multisite_exporter_directory', 'my_custom_export_directory' );
+function my_custom_export_directory( $default_export_dir ) {
+    return WP_CONTENT_DIR . '/my-custom-exports';
+}
+`
+
 == Frequently Asked Questions ==
 
 = Where are the export files stored? =
 
-All export files are stored in a centralized location within your WordPress uploads directory:
+By default, all export files are stored in a centralized location within your WordPress uploads directory:
 `wp-content/uploads/multisite-exports/`
+
+You can change this location using the `multisite_exporter_directory` filter.
 
 = Can I export only certain content types? =
 
@@ -75,6 +90,10 @@ Yes, the plugin uses Action Scheduler to process exports in the background, maki
 = How can I translate this plugin? =
 
 The plugin is fully translatable. A POT file is included in the `languages` directory. You can create translations using a tool like Poedit.
+
+= Can I change where the export files are stored? =
+
+Yes, you can use the `multisite_exporter_directory` filter to specify a custom directory location for your export files.
 
 == Screenshots ==
 

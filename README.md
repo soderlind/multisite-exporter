@@ -10,6 +10,7 @@ Multisite Exporter is a WordPress plugin that allows you to export content from 
 - Centralized export file storage for easy access to all exports
 - Select and download multiple export files as a zip archive
 - Fully translatable with .pot file included
+- Customizable export directory location via filter
 
 ## Requirements
 
@@ -71,6 +72,23 @@ wp-content/uploads/multisite-exports/
 ```
 
 This makes it easy to find and manage exports from all your subsites in one place.
+
+### Customizing Export Directory
+
+You can change the default export directory by using the `multisite_exporter_directory` filter:
+
+```php
+/**
+ * Change the directory where Multisite Exporter stores exported files
+ */
+add_filter( 'multisite_exporter_directory', 'my_custom_export_directory' );
+function my_custom_export_directory( $default_export_dir ) {
+    // Define a custom location for your export files
+    return WP_CONTENT_DIR . '/my-custom-exports';
+}
+```
+
+Add this code to your theme's functions.php file or a custom plugin.
 
 ## Translation
 
