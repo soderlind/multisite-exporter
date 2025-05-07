@@ -15,10 +15,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<h1><?php esc_html_e( 'Multisite Exporter', 'multisite-exporter' ); ?></h1>
 	<p><?php esc_html_e( 'This tool exports content from all subsites in your multisite installation. Exports are saved to a common folder and can be downloaded from the', 'multisite-exporter' ); ?>
 		<a
-			href="<?php echo esc_url( admin_url( 'admin.php?page=multisite-exporter-history' ) ); ?>"><?php esc_html_e( 'Export History', 'multisite-exporter' ); ?></a>
+			href="<?php echo esc_url( network_admin_url( 'admin.php?page=multisite-exporter-history' ) ); ?>"><?php esc_html_e( 'Exports', 'multisite-exporter' ); ?></a>
 		<?php esc_html_e( 'page.', 'multisite-exporter' ); ?>
 	</p>
-	<form method="post">
+
+	<form method="post" id="multisite-exporter-form">
 		<?php wp_nonce_field( 'multisite_exporter_action', 'me_nonce' ); ?>
 		<table class="form-table">
 			<tr>

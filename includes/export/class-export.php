@@ -48,6 +48,11 @@ class ME_Export {
 	 * Custom XML CDATA wrapper for our own export
 	 */
 	public function wxr_cdata( $str ) {
+		// Check if $str is null and convert to empty string if needed
+		if ( $str === null ) {
+			$str = '';
+		}
+
 		if ( ! seems_utf8( $str ) ) {
 			$str = utf8_encode( $str );
 		}
@@ -292,21 +297,37 @@ class ME_Export {
 		$export_dir = $init->get_export_directory();
 		$file_path  = trailingslashit( $export_dir ) . $file_name;
 
+		// Initialize WordPress filesystem
+		global $wp_filesystem;
+
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+
+		// Initialize the filesystem
+		if ( ! WP_Filesystem() ) {
+			wp_die( 'Unable to initialize WordPress filesystem for file download.' );
+		}
+
 		// Check if file exists
-		if ( ! file_exists( $file_path ) ) {
+		if ( ! $wp_filesystem->exists( $file_path ) ) {
 			wp_die( 'File not found.' );
 		}
+
+		// Get file size
+		$file_size = $wp_filesystem->size( $file_path );
 
 		// Force download
 		header( 'Content-Description: File Transfer' );
 		header( 'Content-Type: application/xml' );
 		header( 'Content-Disposition: attachment; filename="' . basename( $file_path ) . '"' );
-		header( 'Content-Length: ' . filesize( $file_path ) );
+		header( 'Content-Length: ' . $file_size );
 		header( 'Cache-Control: must-revalidate' );
 		header( 'Pragma: public' );
 		header( 'Expires: 0' );
 
-		readfile( $file_path );
+		// Read and output file contents
+		echo $wp_filesystem->get_contents( $file_path );
 		exit;
 	}
 }

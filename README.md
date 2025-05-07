@@ -2,6 +2,15 @@
 
 Multisite Exporter is a WordPress plugin that allows you to export content from all subsites in a WordPress multisite installation. The plugin runs the WordPress exporter on each subsite in the background using the Action Scheduler library, making it efficient even for large multisite networks.
 
+
+
+
+<video src="assets/multisite-exporter.mp4"  controls>
+  <source src="assets/multisite-exporter.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+
 ## Features
 
 - Export content from all subsites in a WordPress multisite network
@@ -146,6 +155,49 @@ To create a translation:
 ## License
 
 This plugin is licensed under the GPL v2 or later.
+
+## Debugging
+
+### Error Logging
+
+Multisite Exporter follows WordPress best practices for error logging. All error messages are conditionally logged based on the WP_DEBUG constant setting:
+
+```php
+if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+    error_log( 'Multisite Exporter: [error message]' );
+}
+```
+
+This ensures that:
+- In development environments with WP_DEBUG enabled, you'll see detailed logs about the export process
+- In production environments with WP_DEBUG disabled, no error messages will be written to the log files
+
+### Common Log Messages
+
+When WP_DEBUG is enabled, you may see the following messages in your WordPress debug log:
+
+- Filesystem initialization: Messages about WordPress filesystem initialization
+- Export progress: Notifications when exports start and complete for each blog
+- File operations: Information about file cleanup and management
+- Error handling: Details about any issues encountered during the export process
+
+### Enabling Debug Mode
+
+To enable debug logging for troubleshooting, add the following to your wp-config.php file:
+
+```php
+// Enable WP_DEBUG mode
+define( 'WP_DEBUG', true );
+
+// Enable Debug logging to the /wp-content/debug.log file
+define( 'WP_DEBUG_LOG', true );
+
+// Disable display of errors and warnings
+define( 'WP_DEBUG_DISPLAY', false );
+@ini_set( 'display_errors', 0 );
+```
+
+This configuration will log all errors to the debug.log file without displaying them on screen.
 
 ## Author
 

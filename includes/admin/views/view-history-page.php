@@ -14,6 +14,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 // Get all exports
 $all_exports = get_site_transient( 'multisite_exports' ) ?: array();
 
+// Check if there are active scheduled exports
+$has_active_exports = false;
+if ( class_exists( 'ActionScheduler' ) ) {
+	$store           = ActionScheduler::store();
+	$pending_actions = $store->query_actions( array(
+		'hook'     => 'me_process_site_export',
+		'status'   => ActionScheduler_Store::STATUS_PENDING,
+		'per_page' => 1,
+	) );
+
+	$running_actions = $store->query_actions( array(
+		'hook'     => 'me_process_site_export',
+		'status'   => ActionScheduler_Store::STATUS_RUNNING,
+		'per_page' => 1,
+	) );
+
+	$has_active_exports = ! empty( $pending_actions ) || ! empty( $running_actions );
+}
+
 // Pagination settings
 $per_page      = 10; // Number of exports to show per page
 $current_page  = isset( $_GET[ 'paged' ] ) ? max( 1, intval( $_GET[ 'paged' ] ) ) : 1;
@@ -30,7 +49,28 @@ $offset  = ( $current_page - 1 ) * $per_page;
 $exports = array_slice( $all_exports, $offset, $per_page );
 ?>
 <div class="wrap">
-	<h1><?php esc_html_e( 'Export History', 'multisite-exporter' ); ?></h1>
+	<h1><?php esc_html_e( 'Exports', 'multisite-exporter' ); ?></h1>
+
+	<?php if ( $has_active_exports ) : ?>
+		<!-- Always show the processing indicator when exports are active -->
+		<div class="notice notice-info">
+			<p>
+				<span class="spinner is-active" style="float:none; margin-top:0; margin-right:10px;"></span>
+				<?php esc_html_e( 'Export process is currently running.', 'multisite-exporter' ); ?>
+				<?php if ( empty( $exports ) ) : ?>
+					<?php esc_html_e( 'Exports will appear here when they are completed.', 'multisite-exporter' ); ?>
+				<?php endif; ?>
+			</p>
+			<p>
+				<a href="<?php echo esc_url( network_admin_url( 'admin.php?page=me-scheduled-actions' ) ); ?>">
+					<?php esc_html_e( 'View scheduled actions', 'multisite-exporter' ); ?>
+				</a>
+			</p>
+		</div>
+		<!-- Add auto-refresh meta tag to refresh the page every 10 seconds -->
+		<meta http-equiv="refresh" content="10">
+	<?php endif; ?>
+
 	<?php
 	if ( ! empty( $exports ) ) {
 		?>
@@ -302,7 +342,9 @@ $exports = array_slice( $all_exports, $offset, $per_page );
 		</form>
 		<?php
 	} else {
-		echo '<p>' . esc_html__( 'No exports found.', 'multisite-exporter' ) . '</p>';
+		if ( ! $has_active_exports ) {
+			echo '<p>' . esc_html__( 'No exports found.', 'multisite-exporter' ) . '</p>';
+		}
 	}
 	?>
 </div>

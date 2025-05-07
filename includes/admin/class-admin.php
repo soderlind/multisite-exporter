@@ -57,6 +57,13 @@ class ME_Admin {
 		// AJAX handlers
 		add_action( 'wp_ajax_me_download_export', array( $this, 'handle_export_download' ) );
 		add_action( 'wp_ajax_me_download_selected_exports', array( $this, 'download_selected_exports' ) );
+
+		// AJAX handlers for scheduler progress
+		add_action( 'wp_ajax_me_check_scheduled_exports', array( $this, 'check_scheduled_exports' ) );
+		add_action( 'wp_ajax_me_check_scheduled_progress', array( $this, 'check_scheduled_progress' ) );
+
+		// Track export progress in Action Scheduler
+		add_action( 'me_export_progress_update', array( $this, 'update_export_progress' ), 10, 3 );
 	}
 
 	/**
@@ -96,6 +103,33 @@ class ME_Admin {
 				filemtime( MULTISITE_EXPORTER_PLUGIN_DIR . 'js/history-page.js' ),
 				true
 			);
+			return;
+		}
+
+		// Enqueue the scheduler progress script on the main page
+		if ( strpos( $hook, 'multisite-exporter' ) !== false ) {
+			wp_enqueue_script(
+				'multisite-exporter-scheduler-progress',
+				MULTISITE_EXPORTER_PLUGIN_URL . 'js/scheduler-progress.js',
+				array( 'jquery' ),
+				filemtime( MULTISITE_EXPORTER_PLUGIN_DIR . 'js/scheduler-progress.js' ),
+				true
+			);
+
+			// Pass variables to the script
+			wp_localize_script(
+				'multisite-exporter-scheduler-progress',
+				'multisite_exporter_params',
+				array(
+					'ajax_url' => admin_url( 'admin-ajax.php' ),
+					'nonce'    => wp_create_nonce( 'multisite_exporter_progress_nonce' ),
+					'messages' => array(
+						'processing'   => esc_html__( 'Processing', 'multisite-exporter' ),
+						'completed'    => esc_html__( 'Export completed successfully!', 'multisite-exporter' ),
+						'current_site' => esc_html__( 'Currently exporting site', 'multisite-exporter' ),
+					),
+				)
+			);
 		}
 	}
 
@@ -113,13 +147,13 @@ class ME_Admin {
 			30                      // Position (after Comments which is 25)
 		);
 
-		// Add submenu for export history
+		// Add submenu for export history - renamed to Exports
 		add_submenu_page(
 			'multisite-exporter',  // Parent slug
-			'Export History',      // Page title
-			'Export History',      // Menu title
+			'Exports',             // Page title (renamed from Export History)
+			'Exports',             // Menu title (renamed from Export History)
 			'manage_network',      // Capability
-			'multisite-exporter-history', // Menu slug
+			'multisite-exporter-history', // Menu slug (keeping the same slug for compatibility)
 			array( $this, 'render_history_page' ) // Callback function
 		);
 
@@ -150,7 +184,7 @@ class ME_Admin {
 			$init = ME_Init::instance();
 			$init->schedule_exports( $export_args );
 
-			echo '<div class="updated"><p>' . esc_html__( 'Export has been scheduled for all subsites! View results in the', 'multisite-exporter' ) . ' <a href="' . esc_url( admin_url( 'admin.php?page=multisite-exporter-history' ) ) . '">' . esc_html__( 'Export History', 'multisite-exporter' ) . '</a> ' . esc_html__( 'page.', 'multisite-exporter' ) . '</p></div>';
+			echo '<div class="updated"><p>' . esc_html__( 'Export has been scheduled for all subsites! View results in the', 'multisite-exporter' ) . ' <a href="' . esc_url( network_admin_url( 'admin.php?page=multisite-exporter-history' ) ) . '">' . esc_html__( 'Exports', 'multisite-exporter' ) . '</a> ' . esc_html__( 'page.', 'multisite-exporter' ) . '</p></div>';
 		}
 
 		// Include the main page view
@@ -276,6 +310,205 @@ class ME_Admin {
 		readfile( $temp_file );
 		unlink( $temp_file );
 		exit;
+	}
+
+	/**
+	 * Check for active scheduled exports via AJAX
+	 */
+	public function check_scheduled_exports() {
+		// Verify nonce
+		if ( ! check_ajax_referer( 'multisite_exporter_progress_nonce', 'security', false ) ) {
+			wp_send_json_error( array( 'message' => __( 'Security check failed', 'multisite-exporter' ) ) );
+			return;
+		}
+
+		// Check capabilities
+		if ( ! current_user_can( 'manage_network' ) ) {
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action', 'multisite-exporter' ) ) );
+			return;
+		}
+
+		// Get active exports from Action Scheduler
+		$active_exports     = $this->get_active_export_actions();
+		$has_active_exports = ! empty( $active_exports );
+
+		// Get progress data
+		$progress_data = array(
+			'has_active_exports'   => $has_active_exports,
+			'percentage'           => 0,
+			'current_site'         => '',
+			'current_site_message' => __( 'Currently exporting site', 'multisite-exporter' ),
+			'scheduled_info'       => '',
+			'status'               => 'in_progress',
+		);
+
+		if ( $has_active_exports ) {
+			// Get the export batch ID from the first action
+			$first_action = reset( $active_exports );
+			$batch_id     = $first_action->get_args()[ 0 ] ?? '';
+
+			// Get progress data from network option
+			$export_progress = get_network_option( get_main_network_id(), 'multisite_exporter_progress_' . $batch_id, array() );
+
+			if ( ! empty( $export_progress ) ) {
+				$progress_data[ 'percentage' ]   = $export_progress[ 'percentage' ] ?? 0;
+				$progress_data[ 'current_site' ] = $export_progress[ 'current_site' ] ?? '';
+				$progress_data[ 'status' ]       = $export_progress[ 'status' ] ?? 'in_progress';
+
+				// Calculate scheduled actions info
+				$total_actions                     = count( $active_exports );
+				$scheduled_info                    = sprintf(
+					__( '%d sites pending export', 'multisite-exporter' ),
+					$total_actions
+				);
+				$progress_data[ 'scheduled_info' ] = $scheduled_info;
+			}
+		}
+
+		wp_send_json_success( $progress_data );
+	}
+
+	/**
+	 * Check for progress updates via AJAX
+	 */
+	public function check_scheduled_progress() {
+		// Verify nonce
+		if ( ! check_ajax_referer( 'multisite_exporter_progress_nonce', 'security', false ) ) {
+			wp_send_json_error( array( 'message' => __( 'Security check failed', 'multisite-exporter' ) ) );
+			return;
+		}
+
+		// Check capabilities
+		if ( ! current_user_can( 'manage_network' ) ) {
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action', 'multisite-exporter' ) ) );
+			return;
+		}
+
+		// Get active exports from Action Scheduler
+		$active_exports     = $this->get_active_export_actions();
+		$has_active_exports = ! empty( $active_exports );
+
+		// Default progress data
+		$progress_data = array(
+			'has_active_exports'   => $has_active_exports,
+			'percentage'           => 0,
+			'current_site'         => '',
+			'current_site_message' => __( 'Currently exporting site', 'multisite-exporter' ),
+			'scheduled_info'       => '',
+			'status'               => 'in_progress',
+		);
+
+		if ( $has_active_exports ) {
+			// Get the export batch ID from the first action
+			$first_action = reset( $active_exports );
+			$batch_id     = $first_action->get_args()[ 0 ] ?? '';
+
+			// Get progress data from network option
+			$export_progress = get_network_option( get_main_network_id(), 'multisite_exporter_progress_' . $batch_id, array() );
+
+			if ( ! empty( $export_progress ) ) {
+				$progress_data[ 'percentage' ]   = $export_progress[ 'percentage' ] ?? 0;
+				$progress_data[ 'current_site' ] = $export_progress[ 'current_site' ] ?? '';
+				$progress_data[ 'status' ]       = $export_progress[ 'status' ] ?? 'in_progress';
+
+				// Calculate scheduled actions info
+				$total_actions                     = count( $active_exports );
+				$scheduled_info                    = sprintf(
+					__( '%d sites pending export', 'multisite-exporter' ),
+					$total_actions
+				);
+				$progress_data[ 'scheduled_info' ] = $scheduled_info;
+			}
+		} else {
+			// No active exports, check if we have just completed one
+			$completed_batches = get_network_option( get_main_network_id(), 'multisite_exporter_completed_batches', array() );
+
+			if ( ! empty( $completed_batches ) ) {
+				$latest_batch = end( $completed_batches );
+
+				// Get the latest batch progress data
+				$export_progress = get_network_option( get_main_network_id(), 'multisite_exporter_progress_' . $latest_batch, array() );
+
+				if ( ! empty( $export_progress ) && isset( $export_progress[ 'status' ] ) && $export_progress[ 'status' ] === 'completed' ) {
+					$progress_data[ 'percentage' ]         = 100;
+					$progress_data[ 'status' ]             = 'completed';
+					$progress_data[ 'completion_message' ] = __( 'Export completed successfully!', 'multisite-exporter' );
+					$progress_data[ 'redirect_url' ]       = admin_url( 'admin.php?page=multisite-exporter-history' );
+				}
+			}
+		}
+
+		wp_send_json_success( $progress_data );
+	}
+
+	/**
+	 * Update export progress when action is running
+	 * 
+	 * @param string $batch_id    The export batch ID.
+	 * @param string $current_site The name of the site being exported.
+	 * @param int    $percentage  The progress percentage.
+	 */
+	public function update_export_progress( $batch_id, $current_site, $percentage ) {
+		// Get existing progress data or initialize new array
+		$progress_data = get_network_option( get_main_network_id(), 'multisite_exporter_progress_' . $batch_id, array(
+			'batch_id'     => $batch_id,
+			'start_time'   => time(),
+			'percentage'   => 0,
+			'current_site' => '',
+			'status'       => 'in_progress',
+		) );
+
+		// Update progress data
+		$progress_data[ 'percentage' ]   = $percentage;
+		$progress_data[ 'current_site' ] = $current_site;
+
+		// If 100%, mark as completed
+		if ( $percentage >= 100 ) {
+			$progress_data[ 'status' ]   = 'completed';
+			$progress_data[ 'end_time' ] = time();
+
+			// Add to completed batches list
+			$completed_batches   = get_network_option( get_main_network_id(), 'multisite_exporter_completed_batches', array() );
+			$completed_batches[] = $batch_id;
+			update_network_option( get_main_network_id(), 'multisite_exporter_completed_batches', $completed_batches );
+		}
+
+		// Save updated progress data
+		update_network_option( get_main_network_id(), 'multisite_exporter_progress_' . $batch_id, $progress_data );
+	}
+
+	/**
+	 * Get active export actions from Action Scheduler
+	 * 
+	 * @return array Array of ActionScheduler_Action objects
+	 */
+	private function get_active_export_actions() {
+		// Make sure Action Scheduler is loaded
+		if ( ! class_exists( 'ActionScheduler' ) ) {
+			return array();
+		}
+
+		// Get the action store
+		$store = ActionScheduler::store();
+
+		// Get pending actions for our hook
+		$actions = $store->query_actions( array(
+			'hook'     => 'me_process_site_export',
+			'status'   => ActionScheduler_Store::STATUS_PENDING,
+			'per_page' => -1, // Get all
+		) );
+
+		// Get running actions too
+		$running_actions = $store->query_actions( array(
+			'hook'     => 'me_process_site_export',
+			'status'   => ActionScheduler_Store::STATUS_RUNNING,
+			'per_page' => -1, // Get all
+		) );
+
+		// Combine pending and running actions
+		$actions = array_merge( $actions, $running_actions );
+
+		return $actions;
 	}
 
 	/**
