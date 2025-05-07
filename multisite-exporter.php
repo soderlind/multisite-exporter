@@ -8,6 +8,7 @@ Author URI: https://soderlind.no
 License: GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: multisite-exporter
+Domain Path: /languages
 Network: true
 */
 
@@ -19,25 +20,53 @@ if ( file_exists( __DIR__ . '/vendor/woocommerce/action-scheduler/action-schedul
 // Check multisite.
 if ( ! is_multisite() ) {
 	add_action( 'admin_notices', function () {
-		echo '<div class="error"><p>Multisite Exporter only works on multisite installations.</p></div>';
+		echo '<div class="error"><p>' . esc_html__( 'Multisite Exporter only works on multisite installations.', 'multisite-exporter' ) . '</p></div>';
 	} );
 	return;
 }
+
+/**
+ * Load plugin text domain for translations
+ */
+function me_load_textdomain() {
+	load_plugin_textdomain( 'multisite-exporter', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+}
+add_action( 'plugins_loaded', 'me_load_textdomain', 9 );
 
 // Register admin hooks
 function me_register_admin_hooks() {
 	// Check if Action Scheduler is available after initialization.
 	if ( ! class_exists( 'ActionScheduler' ) ) {
 		add_action( 'network_admin_notices', function () {
-			echo '<div class="error"><p>Action Scheduler is required for Multisite Exporter to work. Please run composer install.</p></div>';
+			echo '<div class="error"><p>' . esc_html__( 'Action Scheduler is required for Multisite Exporter to work. Please run composer install.', 'multisite-exporter' ) . '</p></div>';
 		} );
 		return;
 	}
 
 	// Add menu only if Action Scheduler is available
 	add_action( 'network_admin_menu', 'me_add_admin_menu' );
+
+	// Register plugin styles
+	add_action( 'admin_enqueue_scripts', 'me_enqueue_admin_styles' );
 }
 add_action( 'plugins_loaded', 'me_register_admin_hooks', 10 );
+
+/**
+ * Enqueue admin styles for the plugin
+ */
+function me_enqueue_admin_styles( $hook ) {
+	// Only load the CSS on our plugin pages
+	if ( strpos( $hook, 'multisite-exporter' ) === false ) {
+		return;
+	}
+
+	wp_enqueue_style(
+		'multisite-exporter-styles',
+		plugin_dir_url( __FILE__ ) . 'css/multisite-exporter.css',
+		array(),
+		filemtime( plugin_dir_path( __FILE__ ) . 'css/multisite-exporter.css' )
+	);
+}
 
 /**
  * Get export directory path for saving all exports in one common location
@@ -410,47 +439,27 @@ function me_add_admin_menu() {
 function me_exporter_history_page() {
 	?>
 	<div class="wrap">
-		<h1>Export History</h1>
+		<h1><?php esc_html_e( 'Export History', 'multisite-exporter' ); ?></h1>
 		<?php
 		$exports = get_site_transient( 'multisite_exports' );
 
 		if ( ! empty( $exports ) ) {
 			?>
-			<style>
-				.check-column {
-					width: 2.2em;
-					padding: 8px 10px !important;
-					vertical-align: middle !important;
-				}
-
-				#cb-select-all {
-					margin-left: 0;
-					vertical-align: middle;
-				}
-
-				input[name="selected_exports[]"] {
-					margin-left: 0;
-				}
-
-				.tablenav .actions {
-					padding: 2px 0;
-				}
-
-				.tablenav .button {
-					margin-right: 5px;
-				}
-			</style>
-			<form method="post" action="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>" id="exports-form">
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>" id="exports-form"
+				class="multisite-exporter-table">
 				<input type="hidden" name="action" value="me_download_selected_exports">
 				<?php wp_nonce_field( 'download_selected_exports', 'me_download_nonce' ); ?>
 
 				<div class="tablenav top">
 					<div class="alignleft actions bulkactions">
-						<input type="submit" id="doaction" class="button action" value="Download Selected">
+						<input type="submit" id="doaction" class="button action"
+							value="<?php esc_attr_e( 'Download Selected', 'multisite-exporter' ); ?>">
 					</div>
 					<div class="alignleft actions">
-						<a href="#" class="button" id="select-all">Select All</a>
-						<a href="#" class="button" id="deselect-all">Deselect All</a>
+						<a href="#" class="button"
+							id="select-all"><?php esc_html_e( 'Select All', 'multisite-exporter' ); ?></a>
+						<a href="#" class="button"
+							id="deselect-all"><?php esc_html_e( 'Deselect All', 'multisite-exporter' ); ?></a>
 					</div>
 				</div>
 
@@ -458,11 +467,11 @@ function me_exporter_history_page() {
 					<thead>
 						<tr>
 							<th class="check-column"><input type="checkbox" id="cb-select-all"></th>
-							<th>Blog ID</th>
-							<th>Site Name</th>
-							<th>Export File</th>
-							<th>Date</th>
-							<th>Actions</th>
+							<th><?php esc_html_e( 'Blog ID', 'multisite-exporter' ); ?></th>
+							<th><?php esc_html_e( 'Site Name', 'multisite-exporter' ); ?></th>
+							<th><?php esc_html_e( 'Export File', 'multisite-exporter' ); ?></th>
+							<th><?php esc_html_e( 'Date', 'multisite-exporter' ); ?></th>
+							<th><?php esc_html_e( 'Actions', 'multisite-exporter' ); ?></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -486,7 +495,7 @@ function me_exporter_history_page() {
 								admin_url( 'admin-ajax.php' )
 							);
 
-							echo '<a href="' . esc_url( $download_url ) . '" class="button button-small">Download</a>';
+							echo '<a href="' . esc_url( $download_url ) . '" class="button button-small">' . esc_html__( 'Download', 'multisite-exporter' ) . '</a>';
 							echo '</td></tr>';
 						}
 						?>
@@ -523,7 +532,7 @@ function me_exporter_history_page() {
 			</script>
 			<?php
 		} else {
-			echo '<p>No exports found.</p>';
+			echo '<p>' . esc_html__( 'No exports found.', 'multisite-exporter' ) . '</p>';
 		}
 		?>
 	</div>
@@ -667,43 +676,44 @@ function me_exporter_admin_page() {
 			'end_date'   => sanitize_text_field( $_POST[ 'end_date' ] ?? '' ),
 		];
 		me_schedule_exports( $export_args );
-		echo '<div class="updated"><p>Export has been scheduled for all subsites! View results in the <a href="' . esc_url( admin_url( 'admin.php?page=multisite-exporter-history' ) ) . '">Export History</a> page.</p></div>';
+		echo '<div class="updated"><p>' . esc_html__( 'Export has been scheduled for all subsites! View results in the', 'multisite-exporter' ) . ' <a href="' . esc_url( admin_url( 'admin.php?page=multisite-exporter-history' ) ) . '">' . esc_html__( 'Export History', 'multisite-exporter' ) . '</a> ' . esc_html__( 'page.', 'multisite-exporter' ) . '</p></div>';
 	}
 	?>
 	<div class="wrap">
-		<h1>Multisite Exporter</h1>
-		<p>This tool exports content from all subsites in your multisite installation. Exports are saved to a common folder
-			and can be downloaded from the <a
-				href="<?php echo esc_url( admin_url( 'admin.php?page=multisite-exporter-history' ) ); ?>">Export History</a>
-			page.</p>
+		<h1><?php esc_html_e( 'Multisite Exporter', 'multisite-exporter' ); ?></h1>
+		<p><?php esc_html_e( 'This tool exports content from all subsites in your multisite installation. Exports are saved to a common folder and can be downloaded from the', 'multisite-exporter' ); ?>
+			<a
+				href="<?php echo esc_url( admin_url( 'admin.php?page=multisite-exporter-history' ) ); ?>"><?php esc_html_e( 'Export History', 'multisite-exporter' ); ?></a>
+			<?php esc_html_e( 'page.', 'multisite-exporter' ); ?></p>
 		<form method="post">
 			<?php wp_nonce_field( 'multisite_exporter_action', 'me_nonce' ); ?>
 			<table class="form-table">
 				<tr>
-					<th scope="row">Content</th>
+					<th scope="row"><?php esc_html_e( 'Content', 'multisite-exporter' ); ?></th>
 					<td>
 						<select name="content">
-							<option value="all">All Content</option>
-							<option value="posts">Posts</option>
-							<option value="pages">Pages</option>
-							<option value="attachment">Media</option>
+							<option value="all"><?php esc_html_e( 'All Content', 'multisite-exporter' ); ?></option>
+							<option value="posts"><?php esc_html_e( 'Posts', 'multisite-exporter' ); ?></option>
+							<option value="pages"><?php esc_html_e( 'Pages', 'multisite-exporter' ); ?></option>
+							<option value="attachment"><?php esc_html_e( 'Media', 'multisite-exporter' ); ?></option>
 						</select>
 					</td>
 				</tr>
 				<tr>
-					<th scope="row">Post Type (optional)</th>
-					<td><input type="text" name="post_type" placeholder="e.g., product"></td>
+					<th scope="row"><?php esc_html_e( 'Post Type (optional)', 'multisite-exporter' ); ?></th>
+					<td><input type="text" name="post_type"
+							placeholder="<?php esc_attr_e( 'e.g., product', 'multisite-exporter' ); ?>"></td>
 				</tr>
 				<tr>
-					<th scope="row">Start Date (YYYY-MM-DD)</th>
+					<th scope="row"><?php esc_html_e( 'Start Date (YYYY-MM-DD)', 'multisite-exporter' ); ?></th>
 					<td><input type="date" name="start_date"></td>
 				</tr>
 				<tr>
-					<th scope="row">End Date (YYYY-MM-DD)</th>
+					<th scope="row"><?php esc_html_e( 'End Date (YYYY-MM-DD)', 'multisite-exporter' ); ?></th>
 					<td><input type="date" name="end_date"></td>
 				</tr>
 			</table>
-			<?php submit_button( 'Run Export for All Subsites', 'primary', 'me_run' ); ?>
+			<?php submit_button( __( 'Run Export for All Subsites', 'multisite-exporter' ), 'primary', 'me_run' ); ?>
 		</form>
 	</div>
 	<?php

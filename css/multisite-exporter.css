@@ -1,0 +1,27 @@
+/**
+ * Styles for Multisite Exporter plugin
+ */
+
+/* Export History Page Styles */
+.multisite-exporter-table .check-column {
+	width: 2.2em;
+	padding: 8px 10px !important;
+	vertical-align: middle !important;
+}
+
+.multisite-exporter-table #cb-select-all {
+	margin-left: 0;
+	vertical-align: middle;
+}
+
+.multisite-exporter-table input[name="selected_exports[]"] {
+	margin-left: 0;
+}
+
+.multisite-exporter-table .tablenav .actions {
+	padding: 2px 0;
+}
+
+.multisite-exporter-table .tablenav .button {
+	margin-right: 5px;
+}
