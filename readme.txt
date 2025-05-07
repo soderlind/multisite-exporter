@@ -1,8 +1,8 @@
 === Multisite Exporter ===
-Contributors: persoderlind
+Contributors: PerS
 Tags: multisite, export, background processing, action scheduler
 Requires at least: 5.0
-Tested up to: 6.4
+Tested up to: 6.8
 Requires PHP: 7.0
 Stable tag: 1.0.0
 License: GPLv2 or later

@@ -81,8 +81,17 @@ function me_get_export_directory() {
 	switch_to_blog( 1 );
 
 	// Get main site upload directory
-	$upload_dir = wp_upload_dir();
-	$export_dir = trailingslashit( $upload_dir[ 'basedir' ] ) . 'multisite-exports';
+	$upload_dir         = wp_upload_dir();
+	$default_export_dir = trailingslashit( $upload_dir[ 'basedir' ] ) . 'multisite-exports';
+
+	/**
+	 * Filter the export directory path.
+	 *
+	 * @since 1.0.1
+	 *
+	 * @param string $default_export_dir Default export directory path.
+	 */
+	$export_dir = apply_filters( 'multisite_exporter_directory', $default_export_dir );
 
 	// Create directory if it doesn't exist
 	if ( ! file_exists( $export_dir ) ) {
@@ -684,7 +693,8 @@ function me_exporter_admin_page() {
 		<p><?php esc_html_e( 'This tool exports content from all subsites in your multisite installation. Exports are saved to a common folder and can be downloaded from the', 'multisite-exporter' ); ?>
 			<a
 				href="<?php echo esc_url( admin_url( 'admin.php?page=multisite-exporter-history' ) ); ?>"><?php esc_html_e( 'Export History', 'multisite-exporter' ); ?></a>
-			<?php esc_html_e( 'page.', 'multisite-exporter' ); ?></p>
+			<?php esc_html_e( 'page.', 'multisite-exporter' ); ?>
+		</p>
 		<form method="post">
 			<?php wp_nonce_field( 'multisite_exporter_action', 'me_nonce' ); ?>
 			<table class="form-table">
