@@ -4,12 +4,7 @@ Multisite Exporter is a WordPress plugin that allows you to export content from 
 
 
 
-
-<video src="assets/multisite-exporter.mp4"  controls>
-  <source src="assets/multisite-exporter.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
-
+![Watch demo](assets/multisite-exporter.png)](assets/multisite-exporter.png)
 
 ## Features
 
