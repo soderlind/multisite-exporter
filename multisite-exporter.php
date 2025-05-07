@@ -2,12 +2,13 @@
 /*
 Plugin Name: Multisite Exporter
 Description: Runs WordPress Exporter on each subsite in a multisite, in the background.
-Version: 1.0
+Version: 1.0.1
 Author: Per Søderlind
 Author URI: https://soderlind.no
 License: GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: multisite-exporter
+Domain Path: /languages
 Network: true
 */
 
@@ -19,25 +20,53 @@ if ( file_exists( __DIR__ . '/vendor/woocommerce/action-scheduler/action-schedul
 // Check multisite.
 if ( ! is_multisite() ) {
 	add_action( 'admin_notices', function () {
-		echo '<div class="error"><p>Multisite Exporter only works on multisite installations.</p></div>';
+		echo '<div class="error"><p>' . esc_html__( 'Multisite Exporter only works on multisite installations.', 'multisite-exporter' ) . '</p></div>';
 	} );
 	return;
 }
+
+/**
+ * Load plugin text domain for translations
+ */
+function me_load_textdomain() {
+	load_plugin_textdomain( 'multisite-exporter', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+}
+add_action( 'plugins_loaded', 'me_load_textdomain', 9 );
 
 // Register admin hooks
 function me_register_admin_hooks() {
 	// Check if Action Scheduler is available after initialization.
 	if ( ! class_exists( 'ActionScheduler' ) ) {
 		add_action( 'network_admin_notices', function () {
-			echo '<div class="error"><p>Action Scheduler is required for Multisite Exporter to work. Please run composer install.</p></div>';
+			echo '<div class="error"><p>' . esc_html__( 'Action Scheduler is required for Multisite Exporter to work. Please run composer install.', 'multisite-exporter' ) . '</p></div>';
 		} );
 		return;
 	}
 
 	// Add menu only if Action Scheduler is available
 	add_action( 'network_admin_menu', 'me_add_admin_menu' );
+
+	// Register plugin styles
+	add_action( 'admin_enqueue_scripts', 'me_enqueue_admin_styles' );
 }
 add_action( 'plugins_loaded', 'me_register_admin_hooks', 10 );
+
+/**
+ * Enqueue admin styles for the plugin
+ */
+function me_enqueue_admin_styles( $hook ) {
+	// Only load the CSS on our plugin pages
+	if ( strpos( $hook, 'multisite-exporter' ) === false ) {
+		return;
+	}
+
+	wp_enqueue_style(
+		'multisite-exporter-styles',
+		plugin_dir_url( __FILE__ ) . 'css/multisite-exporter.css',
+		array(),
+		filemtime( plugin_dir_path( __FILE__ ) . 'css/multisite-exporter.css' )
+	);
+}
 
 /**
  * Get export directory path for saving all exports in one common location
@@ -52,8 +81,17 @@ function me_get_export_directory() {
 	switch_to_blog( 1 );
 
 	// Get main site upload directory
-	$upload_dir = wp_upload_dir();
-	$export_dir = trailingslashit( $upload_dir[ 'basedir' ] ) . 'multisite-exports';
+	$upload_dir         = wp_upload_dir();
+	$default_export_dir = trailingslashit( $upload_dir[ 'basedir' ] ) . 'multisite-exports';
+
+	/**
+	 * Filter the export directory path.
+	 *
+	 * @since 1.0.1
+	 *
+	 * @param string $default_export_dir Default export directory path.
+	 */
+	$export_dir = apply_filters( 'multisite_exporter_directory', $default_export_dir );
 
 	// Create directory if it doesn't exist
 	if ( ! file_exists( $export_dir ) ) {
@@ -313,8 +351,8 @@ function me_generate_export( $args = [] ) {
 			$output .= "\t\t\t<wp:comment_content>" . me_wxr_cdata( $comment->comment_content ) . "</wp:comment_content>\n";
 			$output .= "\t\t\t<wp:comment_approved>" . me_wxr_cdata( $comment->comment_approved ) . "</wp:comment_approved>\n";
 			$output .= "\t\t\t<wp:comment_type>" . me_wxr_cdata( $comment->comment_type ) . "</wp:comment_type>\n";
-			$output .= "\t\t\t<wp:comment_parent>" . $comment->comment_parent . "</wp:comment_parent>\n";
-			$output .= "\t\t\t<wp:comment_user_id>" . $comment->user_id . "</wp:comment_user_id>\n";
+			$output .= "\t\t\t<wp:comment_parent>" . $comment->comment_parent . '</wp:comment_parent>';
+			$output .= "\t\t\t<wp:comment_user_id>" . $comment->user_id . '</wp:comment_user_id>';
 
 			// Comment meta
 			$commentmeta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $wpdb->commentmeta WHERE comment_id = %d", $comment->comment_ID ) );
@@ -402,54 +440,620 @@ function me_add_admin_menu() {
 		'multisite-exporter-history', // Menu slug
 		'me_exporter_history_page' // Callback function
 	);
+
+	// Add submenu for Action Scheduler admin
+	add_submenu_page(
+		'multisite-exporter',          // Parent slug
+		esc_html__( 'Scheduled Actions', 'multisite-exporter' ), // Page title
+		esc_html__( 'Scheduled Actions', 'multisite-exporter' ), // Menu title
+		'manage_network',              // Capability
+		'me-scheduled-actions',        // Menu slug - unique to avoid conflicts
+		'me_action_scheduler_admin_page' // Callback function
+	);
+}
+
+/**
+ * Display the Action Scheduler admin screen under our own menu
+ */
+function me_action_scheduler_admin_page() {
+	// Check if Action Scheduler is available
+	if ( ! class_exists( 'ActionScheduler_AdminView' ) ) {
+		echo '<div class="wrap"><h1>' . esc_html__( 'Scheduled Actions', 'multisite-exporter' ) . '</h1>';
+		echo '<div class="error"><p>' . esc_html__( 'Action Scheduler is not available. Please make sure it is properly installed.', 'multisite-exporter' ) . '</p></div>';
+		echo '</div>';
+		return;
+	}
+
+	// First layer of filtering: Add a strong filter directly to the data store's query method
+	add_filter( 'action_scheduler_get_actions_query_args', 'me_force_hook_filter', 999999 );
+
+	// Second layer: Add a direct SQL filter if using the database store 
+	add_filter( 'action_scheduler_store_sql_query', 'me_filter_as_sql_query', 999999 );
+
+	// Include required classes if not already included
+	if ( ! class_exists( 'ActionScheduler_Abstract_ListTable' ) ) {
+		$as_dir = __DIR__ . '/vendor/woocommerce/action-scheduler/';
+		require_once $as_dir . 'classes/abstracts/ActionScheduler_Abstract_ListTable.php';
+	}
+
+	if ( ! class_exists( 'ActionScheduler_ListTable' ) ) {
+		$as_dir = __DIR__ . '/vendor/woocommerce/action-scheduler/';
+		require_once $as_dir . 'classes/ActionScheduler_ListTable.php';
+	}
+
+	// Get store, logger and runner instances
+	$store  = ActionScheduler::store();
+	$logger = ActionScheduler::logger();
+	$runner = ActionScheduler_QueueRunner::instance();
+
+	/**
+	 * Custom extension of ActionScheduler_ListTable to enforce filtering by our hook
+	 * This class is defined within the function to ensure parent class is loaded first
+	 */
+	class ME_Filtered_List_Table extends ActionScheduler_ListTable {
+		/**
+		 * Constructor with forced hook filtering
+		 */
+		public function __construct( $store, $logger, $runner ) {
+			parent::__construct( $store, $logger, $runner );
+
+			// Ensure our filters persist at every level
+			add_filter( 'action_scheduler_list_table_query_args', array( $this, 'filter_by_hook' ), 999999 );
+		}
+
+		/**
+		 * Force filtering by our export hook
+		 */
+		public function filter_by_hook( $args ) {
+			// Override any existing hook filter
+			$args[ 'hook' ] = 'me_process_site_export';
+			return $args;
+		}
+
+		/**
+		 * Override prepare_items to ensure hook filter is always applied
+		 */
+		public function prepare_items() {
+			// Store original query args filter for later restoration
+			$this->prepare_column_headers();
+
+			$per_page = $this->get_items_per_page( $this->get_per_page_option_name(), $this->items_per_page );
+
+			// Make sure the hook is always included in query args
+			$query = array(
+				'per_page' => $per_page,
+				'offset'   => $this->get_items_offset(),
+				'status'   => $this->get_request_status(),
+				'orderby'  => $this->get_request_orderby(),
+				'order'    => $this->get_request_order(),
+				'search'   => $this->get_request_search_query(),
+				'hook'     => 'me_process_site_export', // Always include our hook filter
+			);
+
+			// Rest of the method follows standard ActionScheduler_ListTable logic
+			$this->items = array();
+			$total_items = $this->store->query_actions( $query, 'count' );
+
+			$status_labels = $this->store->get_status_labels();
+
+			foreach ( $this->store->query_actions( $query ) as $action_id ) {
+				try {
+					$action = $this->store->fetch_action( $action_id );
+				} catch (Exception $e) {
+					continue;
+				}
+
+				if ( is_a( $action, 'ActionScheduler_NullAction' ) || $action->get_hook() !== 'me_process_site_export' ) {
+					// Skip actions that aren't ours, double protection
+					continue;
+				}
+
+				$this->items[ $action_id ] = array(
+					'ID'          => $action_id,
+					'hook'        => $action->get_hook(),
+					'status_name' => $this->store->get_status( $action_id ),
+					'status'      => $status_labels[ $this->store->get_status( $action_id ) ],
+					'args'        => $action->get_args(),
+					'group'       => $action->get_group(),
+					'log_entries' => $this->logger->get_logs( $action_id ),
+					'claim_id'    => $this->store->get_claim_id( $action_id ),
+					'recurrence'  => $this->get_recurrence( $action ),
+					'schedule'    => $action->get_schedule(),
+				);
+			}
+
+			$this->set_pagination_args(
+				array(
+					'total_items' => $total_items,
+					'per_page'    => $per_page,
+					'total_pages' => ceil( $total_items / $per_page ),
+				)
+			);
+		}
+
+		/**
+		 * Override get_views to only show relevant status links
+		 */
+		protected function get_views() {
+			$views = parent::get_views();
+
+			// Only keep the essential status filters and add hook filter to each URL
+			foreach ( $views as $status => $link ) {
+				// Add our hook parameter to each link
+				$views[ $status ] = str_replace(
+					'admin.php?page=',
+					'admin.php?hook=me_process_site_export&page=',
+					$link
+				);
+			}
+
+			return $views;
+		}
+	}
+
+	// Create our custom filtered list table with the required parameters
+	$list_table = new ME_Filtered_List_Table( $store, $logger, $runner );
+	$list_table->prepare_items();
+
+	// Start output
+	echo '<div class="wrap">';
+	echo '<h1>' . esc_html__( 'Export Tasks', 'multisite-exporter' ) . '</h1>';
+	echo '<p>' . esc_html__( 'This page shows only the export tasks for Multisite Exporter.', 'multisite-exporter' ) . '</p>';
+
+	// Display search form and navigation
+	echo '<form id="posts-filter" method="get">';
+	echo '<input type="hidden" name="page" value="me-scheduled-actions">';
+	echo '<input type="hidden" name="hook" value="me_process_site_export">'; // Always include hook in form
+
+	// Display the views (status filters)
+	$list_table->views();
+
+	// Display the list table
+	$list_table->display();
+	echo '</form>';
+
+	echo '</div>';
+
+	// Remove our filters after we're done to avoid affecting other parts of the admin
+	remove_filter( 'action_scheduler_get_actions_query_args', 'me_force_hook_filter', 999999 );
+	remove_filter( 'action_scheduler_store_sql_query', 'me_filter_as_sql_query', 999999 );
+}
+
+/**
+ * Force Action Scheduler query args to only show our hook
+ */
+function me_force_hook_filter( $query_args ) {
+	$query_args[ 'hook' ] = 'me_process_site_export';
+	return $query_args;
+}
+
+/**
+ * Filter the SQL query directly if needed
+ */
+function me_filter_as_sql_query( $sql ) {
+	global $wpdb;
+
+	// Only modify the SQL if we're on our custom page
+	if ( isset( $_GET[ 'page' ] ) && $_GET[ 'page' ] === 'me-scheduled-actions' ) {
+		// Ensure the SQL contains a WHERE clause for our hook
+		if ( ! strpos( $sql, "hook = 'me_process_site_export'" ) ) {
+			// If there's a WHERE clause, add our condition
+			if ( strpos( $sql, 'WHERE' ) !== false ) {
+				$sql = str_replace(
+					'WHERE',
+					"WHERE (a.hook = 'me_process_site_export') AND ",
+					$sql
+				);
+			} else {
+				// If no WHERE clause exists, add one
+				$sql .= " WHERE (a.hook = 'me_process_site_export')";
+			}
+		}
+	}
+
+	return $sql;
 }
 
 /**
  * Render the export history page
  */
 function me_exporter_history_page() {
+	// Get all exports
+	$all_exports = get_site_transient( 'multisite_exports' ) ?: array();
+
+	// Pagination settings
+	$per_page      = 10; // Number of exports to show per page
+	$current_page  = isset( $_GET[ 'paged' ] ) ? max( 1, intval( $_GET[ 'paged' ] ) ) : 1;
+	$total_exports = count( $all_exports );
+	$total_pages   = ceil( $total_exports / $per_page );
+
+	// Ensure current page doesn't exceed total pages
+	if ( $current_page > $total_pages && $total_pages > 0 ) {
+		$current_page = $total_pages;
+	}
+
+	// Calculate which exports to show on this page
+	$offset  = ( $current_page - 1 ) * $per_page;
+	$exports = array_slice( $all_exports, $offset, $per_page );
+
 	?>
 	<div class="wrap">
-		<h1>Export History</h1>
+		<h1><?php esc_html_e( 'Export History', 'multisite-exporter' ); ?></h1>
 		<?php
-		$exports = get_site_transient( 'multisite_exports' );
-
 		if ( ! empty( $exports ) ) {
-			echo '<table class="widefat fixed" style="margin-top: 20px;">';
-			echo '<thead><tr>';
-			echo '<th>Blog ID</th>';
-			echo '<th>Site Name</th>';
-			echo '<th>Export File</th>';
-			echo '<th>Date</th>';
-			echo '<th>Actions</th>';
-			echo '</tr></thead>';
-			echo '<tbody>';
+			?>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>" id="exports-form"
+				class="multisite-exporter-table">
+				<input type="hidden" name="action" value="me_download_selected_exports">
+				<?php wp_nonce_field( 'download_selected_exports', 'me_download_nonce' ); ?>
+				<input type="hidden" name="select_all_pages" id="select_all_pages" value="0">
 
-			foreach ( $exports as $export ) {
-				echo '<tr>';
-				echo '<td>' . esc_html( $export[ 'blog_id' ] ) . '</td>';
-				echo '<td>' . esc_html( $export[ 'site_name' ] ) . '</td>';
-				echo '<td>' . esc_html( $export[ 'file_name' ] ) . '</td>';
-				echo '<td>' . esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $export[ 'date' ] ) ) ) . '</td>';
-				echo '<td>';
+				<div class="tablenav top">
+					<div class="alignleft actions bulkactions">
+						<input type="submit" id="doaction" class="button action"
+							value="<?php esc_attr_e( 'Download Selected', 'multisite-exporter' ); ?>">
+					</div>
+					<div class="alignleft actions">
+						<a href="#" class="button"
+							id="select-all"><?php esc_html_e( 'Select All', 'multisite-exporter' ); ?></a>
+						<a href="#" class="button"
+							id="deselect-all"><?php esc_html_e( 'Deselect All', 'multisite-exporter' ); ?></a>
+					</div>
 
-				// Create a download URL using WordPress admin-ajax.php
-				$download_url = add_query_arg(
-					array(
-						'action' => 'me_download_export',
-						'file'   => base64_encode( $export[ 'file_name' ] ),
-						'nonce'  => wp_create_nonce( 'download_export_' . $export[ 'file_name' ] ),
-					),
-					admin_url( 'admin-ajax.php' )
-				);
+					<div id="select-all-pages-notice" class="alignleft hidden"
+						style="margin-left: 10px; padding: 5px; background-color: #f7f7f7; border: 1px solid #ccc; display: none;">
+						<span>
+							<?php
+							printf(
+								/* translators: %1$d: Number of items on current page, %2$d: Total number of items */
+								esc_html__( 'All %1$d exports on this page are selected. ', 'multisite-exporter' ),
+								count( $exports )
+							);
+							?>
+						</span>
+						<a href="#" id="select-across-pages">
+							<?php
+							printf(
+								/* translators: %d: Total number of items */
+								esc_html__( 'Select all %d exports across all pages', 'multisite-exporter' ),
+								$total_exports
+							);
+							?>
+						</a>
+					</div>
 
-				echo '<a href="' . esc_url( $download_url ) . '" class="button button-small">Download</a>';
-				echo '</td></tr>';
-			}
+					<div id="all-selected-notice" class="alignleft hidden"
+						style="margin-left: 10px; padding: 5px; background-color: #f7f7f7; border: 1px solid #ccc; display: none;">
+						<?php
+						printf(
+							/* translators: %d: Total number of items */
+							esc_html__( 'All %d exports across all pages are selected. ', 'multisite-exporter' ),
+							$total_exports
+						);
+						?>
+						<a href="#" id="clear-selection"><?php esc_html_e( 'Clear selection', 'multisite-exporter' ); ?></a>
+					</div>
 
-			echo '</tbody></table>';
+					<?php if ( $total_pages > 1 ) : ?>
+						<div class="tablenav-pages">
+							<span class="displaying-num">
+								<?php
+								printf(
+									/* translators: %s: Number of exports */
+									_n( '%s export', '%s exports', $total_exports, 'multisite-exporter' ),
+									number_format_i18n( $total_exports )
+								);
+								?>
+							</span>
+							<span class="pagination-links">
+								<?php
+								// First page link
+								if ( $current_page > 1 ) {
+									printf(
+										'<a class="first-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
+										esc_url( add_query_arg( 'paged', 1 ) ),
+										esc_html__( 'First page', 'multisite-exporter' ),
+										'&laquo;'
+									);
+								} else {
+									printf(
+										'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
+										'&laquo;'
+									);
+								}
+
+								// Previous page link
+								if ( $current_page > 1 ) {
+									printf(
+										'<a class="prev-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
+										esc_url( add_query_arg( 'paged', max( 1, $current_page - 1 ) ) ),
+										esc_html__( 'Previous page', 'multisite-exporter' ),
+										'&lsaquo;'
+									);
+								} else {
+									printf(
+										'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
+										'&lsaquo;'
+									);
+								}
+
+								// Current page text input
+								printf(
+									'<span class="paging-input"><input class="current-page" id="current-page-selector" type="text" name="paged" value="%s" size="1" aria-describedby="table-paging"> %s <span class="total-pages">%s</span></span>',
+									$current_page,
+									esc_html__( 'of', 'multisite-exporter' ),
+									number_format_i18n( $total_pages )
+								);
+
+								// Next page link
+								if ( $current_page < $total_pages ) {
+									printf(
+										'<a class="next-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
+										esc_url( add_query_arg( 'paged', min( $total_pages, $current_page + 1 ) ) ),
+										esc_html__( 'Next page', 'multisite-exporter' ),
+										'&rsaquo;'
+									);
+								} else {
+									printf(
+										'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
+										'&rsaquo;'
+									);
+								}
+
+								// Last page link
+								if ( $current_page < $total_pages ) {
+									printf(
+										'<a class="last-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
+										esc_url( add_query_arg( 'paged', $total_pages ) ),
+										esc_html__( 'Last page', 'multisite-exporter' ),
+										'&raquo;'
+									);
+								} else {
+									printf(
+										'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
+										'&raquo;'
+									);
+								}
+								?>
+							</span>
+						</div>
+					<?php endif; ?>
+				</div>
+
+				<table class="widefat fixed" style="margin-top: 20px;">
+					<thead>
+						<tr>
+							<th class="check-column"><input type="checkbox" id="cb-select-all"></th>
+							<th><?php esc_html_e( 'Blog ID', 'multisite-exporter' ); ?></th>
+							<th><?php esc_html_e( 'Site Name', 'multisite-exporter' ); ?></th>
+							<th><?php esc_html_e( 'Export File', 'multisite-exporter' ); ?></th>
+							<th><?php esc_html_e( 'Date', 'multisite-exporter' ); ?></th>
+							<th><?php esc_html_e( 'Actions', 'multisite-exporter' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php
+						foreach ( $exports as $export ) {
+							echo '<tr>';
+							echo '<td class="check-column"><input type="checkbox" name="selected_exports[]" value="' . esc_attr( $export[ 'file_name' ] ) . '"></td>';
+							echo '<td>' . esc_html( $export[ 'blog_id' ] ) . '</td>';
+							echo '<td>' . esc_html( $export[ 'site_name' ] ) . '</td>';
+							echo '<td>' . esc_html( $export[ 'file_name' ] ) . '</td>';
+							echo '<td>' . esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $export[ 'date' ] ) ) ) . '</td>';
+							echo '<td>';
+
+							// Create a download URL using WordPress admin-ajax.php
+							$download_url = add_query_arg(
+								array(
+									'action' => 'me_download_export',
+									'file'   => base64_encode( $export[ 'file_name' ] ),
+									'nonce'  => wp_create_nonce( 'download_export_' . $export[ 'file_name' ] ),
+								),
+								admin_url( 'admin-ajax.php' )
+							);
+
+							echo '<a href="' . esc_url( $download_url ) . '" class="button button-small">' . esc_html__( 'Download', 'multisite-exporter' ) . '</a>';
+							echo '</td></tr>';
+						}
+						?>
+					</tbody>
+				</table>
+
+				<?php if ( $total_pages > 1 ) : ?>
+					<div class="tablenav bottom">
+						<div class="tablenav-pages">
+							<span class="displaying-num">
+								<?php
+								printf(
+									/* translators: %s: Number of exports */
+									_n( '%s export', '%s exports', $total_exports, 'multisite-exporter' ),
+									number_format_i18n( $total_exports )
+								);
+								?>
+							</span>
+							<span class="pagination-links">
+								<?php
+								// First page link
+								if ( $current_page > 1 ) {
+									printf(
+										'<a class="first-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
+										esc_url( add_query_arg( 'paged', 1 ) ),
+										esc_html__( 'First page', 'multisite-exporter' ),
+										'&laquo;'
+									);
+								} else {
+									printf(
+										'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
+										'&laquo;'
+									);
+								}
+
+								// Previous page link
+								if ( $current_page > 1 ) {
+									printf(
+										'<a class="prev-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
+										esc_url( add_query_arg( 'paged', max( 1, $current_page - 1 ) ) ),
+										esc_html__( 'Previous page', 'multisite-exporter' ),
+										'&lsaquo;'
+									);
+								} else {
+									printf(
+										'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
+										'&lsaquo;'
+									);
+								}
+
+								// Current page text
+								printf(
+									'<span class="paging-input">%s %s <span class="total-pages">%s</span></span>',
+									$current_page,
+									esc_html__( 'of', 'multisite-exporter' ),
+									number_format_i18n( $total_pages )
+								);
+
+								// Next page link
+								if ( $current_page < $total_pages ) {
+									printf(
+										'<a class="next-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
+										esc_url( add_query_arg( 'paged', min( $total_pages, $current_page + 1 ) ) ),
+										esc_html__( 'Next page', 'multisite-exporter' ),
+										'&rsaquo;'
+									);
+								} else {
+									printf(
+										'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
+										'&rsaquo;'
+									);
+								}
+
+								// Last page link
+								if ( $current_page < $total_pages ) {
+									printf(
+										'<a class="last-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
+										esc_url( add_query_arg( 'paged', $total_pages ) ),
+										esc_html__( 'Last page', 'multisite-exporter' ),
+										'&raquo;'
+									);
+								} else {
+									printf(
+										'<span class="tablenav-pages-navspan button disabled" aria-hidden="true">%s</span>',
+										'&raquo;'
+									);
+								}
+								?>
+							</span>
+						</div>
+					</div>
+				<?php endif; ?>
+			</form>
+			<script type="text/javascript">
+				jQuery(document).ready(function ($) {
+					// Track "select all pages" state
+					var allPagesSelected = false;
+
+					// Select/deselect all checkboxes on current page
+					$('#cb-select-all').on('click', function () {
+						$('input[name="selected_exports[]"]').prop('checked', this.checked);
+						updateSelectAllPagesNotice(this.checked);
+					});
+
+					// Select all button (current page)
+					$('#select-all').on('click', function (e) {
+						e.preventDefault();
+						$('input[name="selected_exports[]"]').prop('checked', true);
+						$('#cb-select-all').prop('checked', true);
+						updateSelectAllPagesNotice(true);
+					});
+
+					// Deselect all button 
+					$('#deselect-all').on('click', function (e) {
+						e.preventDefault();
+						$('input[name="selected_exports[]"]').prop('checked', false);
+						$('#cb-select-all').prop('checked', false);
+						$('#select_all_pages').val(0);
+						updateSelectAllPagesNotice(false);
+						hideAllSelectedNotice();
+					});
+
+					// Select all exports across all pages
+					$('#select-across-pages').on('click', function (e) {
+						e.preventDefault();
+						$('#select_all_pages').val(1);
+						allPagesSelected = true;
+						showAllSelectedNotice();
+						hideSelectAllPagesNotice();
+					});
+
+					// Clear selection of all exports across pages
+					$('#clear-selection').on('click', function (e) {
+						e.preventDefault();
+						$('#select_all_pages').val(0);
+						allPagesSelected = false;
+						$('input[name="selected_exports[]"]').prop('checked', false);
+						$('#cb-select-all').prop('checked', false);
+						hideAllSelectedNotice();
+					});
+
+					// Show notice that all exports on current page are selected
+					function updateSelectAllPagesNotice(allChecked) {
+						if (allChecked && !allPagesSelected) {
+							showSelectAllPagesNotice();
+						} else {
+							hideSelectAllPagesNotice();
+						}
+					}
+
+					function showSelectAllPagesNotice() {
+						$('#select-all-pages-notice').removeClass('hidden').show();
+					}
+
+					function hideSelectAllPagesNotice() {
+						$('#select-all-pages-notice').addClass('hidden').hide();
+					}
+
+					function showAllSelectedNotice() {
+						$('#all-selected-notice').removeClass('hidden').show();
+					}
+
+					function hideAllSelectedNotice() {
+						$('#all-selected-notice').addClass('hidden').hide();
+					}
+
+					// Update header checkbox when individual checkboxes change
+					$('input[name="selected_exports[]"]').on('change', function () {
+						var allChecked = $('input[name="selected_exports[]"]:checked').length === $('input[name="selected_exports[]"]').length;
+						$('#cb-select-all').prop('checked', allChecked);
+						updateSelectAllPagesNotice(allChecked);
+
+						// If individual checkboxes are unchecked, we're not in "all pages selected" mode anymore
+						if (!$(this).prop('checked') && allPagesSelected) {
+							allPagesSelected = false;
+							$('#select_all_pages').val(0);
+							hideAllSelectedNotice();
+						}
+					});
+
+					// Handle manual page input submission
+					$('#current-page-selector').keydown(function (e) {
+						if (e.keyCode === 13) { // Enter key
+							e.preventDefault();
+							var page = parseInt($(this).val());
+							if (isNaN(page) || page < 1) {
+								page = 1;
+							} else if (page > <?php echo intval( $total_pages ); ?>) {
+								page = <?php echo intval( $total_pages ); ?>;
+							}
+
+							// If "select all pages" is active, preserve that when changing pages
+							var url = '<?php echo esc_js( remove_query_arg( 'paged' ) ); ?>&paged=' + page;
+							window.location.href = url;
+						}
+					});
+				});
+			</script>
+			<?php
 		} else {
-			echo '<p>No exports found.</p>';
+			echo '<p>' . esc_html__( 'No exports found.', 'multisite-exporter' ) . '</p>';
 		}
 		?>
 	</div>
@@ -494,6 +1098,95 @@ function me_handle_export_download() {
 	exit;
 }
 
+/**
+ * Handle the download of multiple selected export files as a zip archive
+ */
+add_action( 'wp_ajax_me_download_selected_exports', 'me_download_selected_exports' );
+function me_download_selected_exports() {
+	// Check nonce for security
+	if ( ! isset( $_POST[ 'me_download_nonce' ] ) || ! wp_verify_nonce( $_POST[ 'me_download_nonce' ], 'download_selected_exports' ) ) {
+		wp_die( esc_html__( 'Security check failed.', 'multisite-exporter' ) );
+	}
+
+	// Check if we're selecting all exports across all pages
+	$select_all_pages = isset( $_POST[ 'select_all_pages' ] ) && $_POST[ 'select_all_pages' ] == '1';
+
+	// Get selected exports or all exports if select_all_pages is true
+	$all_exports = get_site_transient( 'multisite_exports' ) ?: array();
+
+	if ( $select_all_pages ) {
+		// Use all available exports
+		$selected = array_column( $all_exports, 'file_name' );
+	} else {
+		// Use only explicitly selected exports
+		$selected = isset( $_POST[ 'selected_exports' ] ) ? (array) $_POST[ 'selected_exports' ] : array();
+	}
+
+	// Ensure we have selected exports
+	if ( empty( $selected ) ) {
+		wp_die( esc_html__( 'No exports selected.', 'multisite-exporter' ) );
+	}
+
+	// If there's only one file selected, just download it directly
+	if ( count( $selected ) === 1 ) {
+		$file_name = $selected[ 0 ];
+		me_download_export_file( $file_name );
+		exit;
+	}
+
+	// Create a zip file containing all selected exports
+	$zip       = new ZipArchive();
+	$temp_file = tempnam( sys_get_temp_dir(), 'me_exports_' );
+
+	if ( $zip->open( $temp_file, ZipArchive::CREATE ) !== true ) {
+		wp_die( esc_html__( 'Could not create ZIP file.', 'multisite-exporter' ) );
+	}
+
+	// Directory structure to look for export files
+	$export_dirs = array(
+		WP_CONTENT_DIR . '/uploads/multisite-exports/',
+		// Add any other directories you might use for export files
+	);
+
+	$found_files = array();
+
+	// Add files to the zip
+	foreach ( $selected as $file_name ) {
+		foreach ( $export_dirs as $dir ) {
+			$file_path = $dir . $file_name;
+			if ( file_exists( $file_path ) ) {
+				$zip->addFile( $file_path, $file_name );
+				$found_files[] = $file_name;
+				break;
+			}
+		}
+	}
+
+	// Check if we found all files
+	if ( count( $found_files ) !== count( $selected ) ) {
+		$missing       = array_diff( $selected, $found_files );
+		$error_message = sprintf(
+			/* translators: %s: Comma-separated list of missing files */
+			esc_html__( 'Could not find some export files: %s', 'multisite-exporter' ),
+			implode( ', ', $missing )
+		);
+		wp_die( $error_message );
+	}
+
+	$zip->close();
+
+	// Output the zip file
+	header( 'Content-Type: application/zip' );
+	header( 'Content-Disposition: attachment; filename="multisite-exports-' . date( 'Y-m-d' ) . '.zip"' );
+	header( 'Content-Length: ' . filesize( $temp_file ) );
+	header( 'Pragma: no-cache' );
+	header( 'Expires: 0' );
+
+	readfile( $temp_file );
+	unlink( $temp_file );
+	exit;
+}
+
 function me_exporter_admin_page() {
 	// Add nonce for security
 	if ( isset( $_POST[ 'me_run' ] ) && check_admin_referer( 'multisite_exporter_action', 'me_nonce' ) ) {
@@ -504,43 +1197,45 @@ function me_exporter_admin_page() {
 			'end_date'   => sanitize_text_field( $_POST[ 'end_date' ] ?? '' ),
 		];
 		me_schedule_exports( $export_args );
-		echo '<div class="updated"><p>Export has been scheduled for all subsites! View results in the <a href="' . esc_url( admin_url( 'admin.php?page=multisite-exporter-history' ) ) . '">Export History</a> page.</p></div>';
+		echo '<div class="updated"><p>' . esc_html__( 'Export has been scheduled for all subsites! View results in the', 'multisite-exporter' ) . ' <a href="' . esc_url( admin_url( 'admin.php?page=multisite-exporter-history' ) ) . '">' . esc_html__( 'Export History', 'multisite-exporter' ) . '</a> ' . esc_html__( 'page.', 'multisite-exporter' ) . '</p></div>';
 	}
 	?>
 	<div class="wrap">
-		<h1>Multisite Exporter</h1>
-		<p>This tool exports content from all subsites in your multisite installation. Exports are saved to a common folder
-			and can be downloaded from the <a
-				href="<?php echo esc_url( admin_url( 'admin.php?page=multisite-exporter-history' ) ); ?>">Export History</a>
-			page.</p>
+		<h1><?php esc_html_e( 'Multisite Exporter', 'multisite-exporter' ); ?></h1>
+		<p><?php esc_html_e( 'This tool exports content from all subsites in your multisite installation. Exports are saved to a common folder and can be downloaded from the', 'multisite-exporter' ); ?>
+			<a
+				href="<?php echo esc_url( admin_url( 'admin.php?page=multisite-exporter-history' ) ); ?>"><?php esc_html_e( 'Export History', 'multisite-exporter' ); ?></a>
+			<?php esc_html_e( 'page.', 'multisite-exporter' ); ?>
+		</p>
 		<form method="post">
 			<?php wp_nonce_field( 'multisite_exporter_action', 'me_nonce' ); ?>
 			<table class="form-table">
 				<tr>
-					<th scope="row">Content</th>
+					<th scope="row"><?php esc_html_e( 'Content', 'multisite-exporter' ); ?></th>
 					<td>
 						<select name="content">
-							<option value="all">All Content</option>
-							<option value="posts">Posts</option>
-							<option value="pages">Pages</option>
-							<option value="attachment">Media</option>
+							<option value="all"><?php esc_html_e( 'All Content', 'multisite-exporter' ); ?></option>
+							<option value="posts"><?php esc_html_e( 'Posts', 'multisite-exporter' ); ?></option>
+							<option value="pages"><?php esc_html_e( 'Pages', 'multisite-exporter' ); ?></option>
+							<option value="attachment"><?php esc_html_e( 'Media', 'multisite-exporter' ); ?></option>
 						</select>
 					</td>
 				</tr>
 				<tr>
-					<th scope="row">Post Type (optional)</th>
-					<td><input type="text" name="post_type" placeholder="e.g., product"></td>
+					<th scope="row"><?php esc_html_e( 'Post Type (optional)', 'multisite-exporter' ); ?></th>
+					<td><input type="text" name="post_type"
+							placeholder="<?php esc_attr_e( 'e.g., product', 'multisite-exporter' ); ?>"></td>
 				</tr>
 				<tr>
-					<th scope="row">Start Date (YYYY-MM-DD)</th>
+					<th scope="row"><?php esc_html_e( 'Start Date (YYYY-MM-DD)', 'multisite-exporter' ); ?></th>
 					<td><input type="date" name="start_date"></td>
 				</tr>
 				<tr>
-					<th scope="row">End Date (YYYY-MM-DD)</th>
+					<th scope="row"><?php esc_html_e( 'End Date (YYYY-MM-DD)', 'multisite-exporter' ); ?></th>
 					<td><input type="date" name="end_date"></td>
 				</tr>
 			</table>
-			<?php submit_button( 'Run Export for All Subsites', 'primary', 'me_run' ); ?>
+			<?php submit_button( __( 'Run Export for All Subsites', 'multisite-exporter' ), 'primary', 'me_run' ); ?>
 		</form>
 	</div>
 	<?php
