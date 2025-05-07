@@ -46,7 +46,6 @@ class Multisite_Exporter {
 	 * Multisite_Exporter Constructor.
 	 */
 	public function __construct() {
-		$this->define_constants();
 		$this->includes();
 		$this->init_hooks();
 
@@ -61,18 +60,6 @@ class Multisite_Exporter {
 
 		// Initialize classes
 		add_action( 'plugins_loaded', array( $this, 'init' ), 10 );
-	}
-
-	/**
-	 * Define plugin constants
-	 *
-	 * @return void
-	 */
-	private function define_constants() {
-		define( 'MULTISITE_EXPORTER_VERSION', '1.0.1' );
-		define( 'MULTISITE_EXPORTER_PLUGIN_DIR', plugin_dir_path( dirname( __FILE__ ) ) );
-		define( 'MULTISITE_EXPORTER_PLUGIN_URL', plugin_dir_url( dirname( __FILE__ ) ) );
-		define( 'MULTISITE_EXPORTER_PLUGIN_FILE', dirname( dirname( __FILE__ ) ) . '/multisite-exporter.php' );
 	}
 
 	/**
