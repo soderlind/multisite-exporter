@@ -2,21 +2,21 @@
 # This file is distributed under the GPL2.
 msgid ""
 msgstr ""
-"Project-Id-Version: Multisite Exporter 1.0\n"
+"Project-Id-Version: Multisite Exporter 1.0.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/multisite-exporter\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-05-07T00:07:46+00:00\n"
+"POT-Creation-Date: 2025-05-07T01:43:28+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: multisite-exporter\n"
 
 #. Plugin Name of the plugin
 #: multisite-exporter.php
-#: multisite-exporter.php:683
+#: multisite-exporter.php:1204
 msgid "Multisite Exporter"
 msgstr ""
 
@@ -43,101 +43,188 @@ msgstr ""
 msgid "Action Scheduler is required for Multisite Exporter to work. Please run composer install."
 msgstr ""
 
-#: multisite-exporter.php:442
-#: multisite-exporter.php:679
-#: multisite-exporter.php:686
-msgid "Export History"
-msgstr ""
-
-#: multisite-exporter.php:456
-msgid "Download Selected"
-msgstr ""
-
-#: multisite-exporter.php:460
-msgid "Select All"
+#: multisite-exporter.php:447
+#: multisite-exporter.php:448
+#: multisite-exporter.php:461
+msgid "Scheduled Actions"
 msgstr ""
 
 #: multisite-exporter.php:462
-msgid "Deselect All"
+msgid "Action Scheduler is not available. Please make sure it is properly installed."
 msgstr ""
 
-#: multisite-exporter.php:470
-msgid "Blog ID"
+#: multisite-exporter.php:600
+msgid "Export Tasks"
 msgstr ""
 
-#: multisite-exporter.php:471
-msgid "Site Name"
+#: multisite-exporter.php:601
+msgid "This page shows only the export tasks for Multisite Exporter."
 msgstr ""
 
-#: multisite-exporter.php:472
-msgid "Export File"
+#: multisite-exporter.php:681
+#: multisite-exporter.php:1200
+#: multisite-exporter.php:1207
+msgid "Export History"
 msgstr ""
 
-#: multisite-exporter.php:473
-msgid "Date"
-msgstr ""
-
-#: multisite-exporter.php:474
-msgid "Actions"
-msgstr ""
-
-#: multisite-exporter.php:498
-msgid "Download"
-msgstr ""
-
-#: multisite-exporter.php:535
-msgid "No exports found."
-msgstr ""
-
-#: multisite-exporter.php:679
-msgid "Export has been scheduled for all subsites! View results in the"
-msgstr ""
-
-#: multisite-exporter.php:679
-#: multisite-exporter.php:687
-msgid "page."
-msgstr ""
-
-#: multisite-exporter.php:684
-msgid "This tool exports content from all subsites in your multisite installation. Exports are saved to a common folder and can be downloaded from the"
-msgstr ""
-
-#: multisite-exporter.php:692
-msgid "Content"
-msgstr ""
-
-#: multisite-exporter.php:695
-msgid "All Content"
-msgstr ""
-
-#: multisite-exporter.php:696
-msgid "Posts"
-msgstr ""
-
-#: multisite-exporter.php:697
-msgid "Pages"
+#: multisite-exporter.php:694
+msgid "Download Selected"
 msgstr ""
 
 #: multisite-exporter.php:698
+msgid "Select All"
+msgstr ""
+
+#: multisite-exporter.php:700
+msgid "Deselect All"
+msgstr ""
+
+#. translators: %1$d: Number of items on current page, %2$d: Total number of items
+#: multisite-exporter.php:709
+msgid "All %1$d exports on this page are selected. "
+msgstr ""
+
+#. translators: %d: Total number of items
+#: multisite-exporter.php:718
+msgid "Select all %d exports across all pages"
+msgstr ""
+
+#. translators: %d: Total number of items
+#: multisite-exporter.php:730
+msgid "All %d exports across all pages are selected. "
+msgstr ""
+
+#: multisite-exporter.php:734
+msgid "Clear selection"
+msgstr ""
+
+#. translators: %s: Number of exports
+#: multisite-exporter.php:743
+#: multisite-exporter.php:869
+msgid "%s export"
+msgid_plural "%s exports"
+msgstr[0] ""
+msgstr[1] ""
+
+#: multisite-exporter.php:755
+#: multisite-exporter.php:881
+msgid "First page"
+msgstr ""
+
+#: multisite-exporter.php:770
+#: multisite-exporter.php:896
+msgid "Previous page"
+msgstr ""
+
+#: multisite-exporter.php:784
+#: multisite-exporter.php:910
+msgid "of"
+msgstr ""
+
+#: multisite-exporter.php:793
+#: multisite-exporter.php:919
+msgid "Next page"
+msgstr ""
+
+#: multisite-exporter.php:808
+#: multisite-exporter.php:934
+msgid "Last page"
+msgstr ""
+
+#: multisite-exporter.php:827
+msgid "Blog ID"
+msgstr ""
+
+#: multisite-exporter.php:828
+msgid "Site Name"
+msgstr ""
+
+#: multisite-exporter.php:829
+msgid "Export File"
+msgstr ""
+
+#: multisite-exporter.php:830
+msgid "Date"
+msgstr ""
+
+#: multisite-exporter.php:831
+msgid "Actions"
+msgstr ""
+
+#: multisite-exporter.php:855
+msgid "Download"
+msgstr ""
+
+#: multisite-exporter.php:1056
+msgid "No exports found."
+msgstr ""
+
+#: multisite-exporter.php:1108
+msgid "Security check failed."
+msgstr ""
+
+#: multisite-exporter.php:1127
+msgid "No exports selected."
+msgstr ""
+
+#: multisite-exporter.php:1142
+msgid "Could not create ZIP file."
+msgstr ""
+
+#. translators: %s: Comma-separated list of missing files
+#: multisite-exporter.php:1170
+msgid "Could not find some export files: %s"
+msgstr ""
+
+#: multisite-exporter.php:1200
+msgid "Export has been scheduled for all subsites! View results in the"
+msgstr ""
+
+#: multisite-exporter.php:1200
+#: multisite-exporter.php:1208
+msgid "page."
+msgstr ""
+
+#: multisite-exporter.php:1205
+msgid "This tool exports content from all subsites in your multisite installation. Exports are saved to a common folder and can be downloaded from the"
+msgstr ""
+
+#: multisite-exporter.php:1214
+msgid "Content"
+msgstr ""
+
+#: multisite-exporter.php:1217
+msgid "All Content"
+msgstr ""
+
+#: multisite-exporter.php:1218
+msgid "Posts"
+msgstr ""
+
+#: multisite-exporter.php:1219
+msgid "Pages"
+msgstr ""
+
+#: multisite-exporter.php:1220
 msgid "Media"
 msgstr ""
 
-#: multisite-exporter.php:703
+#: multisite-exporter.php:1225
 msgid "Post Type (optional)"
 msgstr ""
 
-#: multisite-exporter.php:705
+#: multisite-exporter.php:1227
 msgid "e.g., product"
 msgstr ""
 
-#: multisite-exporter.php:708
+#: multisite-exporter.php:1230
 msgid "Start Date (YYYY-MM-DD)"
 msgstr ""
 
-#: multisite-exporter.php:712
+#: multisite-exporter.php:1234
 msgid "End Date (YYYY-MM-DD)"
 msgstr ""
 
-#: multisite-exporter.php:716
+#: multisite-exporter.php:1238
 msgid "Run Export for All Subsites"
 msgstr ""
