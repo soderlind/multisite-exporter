@@ -97,7 +97,6 @@ class ME_Export {
 			'start_date' => false,
 			'end_date'   => false,
 			'status'     => false,
-			'post_type'  => '',
 		];
 		$args     = wp_parse_args( $args, $defaults );
 
@@ -140,7 +139,7 @@ class ME_Export {
 			// If specific post types are selected, use those
 			$selected_types = array();
 
-			// First check for specific named content types
+			// Check all selected content types (both built-in and custom post types)
 			foreach ( $args[ 'content' ] as $content_type ) {
 				if ( post_type_exists( $content_type ) ) {
 					$ptype = get_post_type_object( $content_type );
@@ -148,11 +147,6 @@ class ME_Export {
 						$selected_types[] = $content_type;
 					}
 				}
-			}
-
-			// If user specified a post_type parameter, add it
-			if ( ! empty( $args[ 'post_type' ] ) ) {
-				$selected_types[] = $args[ 'post_type' ];
 			}
 
 			// Handle the selected post types
@@ -214,6 +208,23 @@ class ME_Export {
 			$output .= "</wp:author>\n";
 		}
 
+		// Get all custom taxonomies for the post types we're exporting
+		$taxonomies = array();
+		if ( in_array( 'all', $args[ 'content' ] ) ) {
+			$taxonomies = get_taxonomies( array(), 'objects' );
+		} else {
+			$post_types = array();
+			foreach ( $args[ 'content' ] as $content_type ) {
+				if ( post_type_exists( $content_type ) ) {
+					$post_types[] = $content_type;
+				}
+			}
+			foreach ( $post_types as $post_type ) {
+				$post_type_taxonomies = get_object_taxonomies( $post_type, 'objects' );
+				$taxonomies           = array_merge( $taxonomies, $post_type_taxonomies );
+			}
+		}
+
 		// Add categories
 		$categories = get_categories( [ 'get' => 'all' ] );
 		foreach ( $categories as $category ) {
@@ -235,6 +246,29 @@ class ME_Export {
 			$output .= '<wp:tag_name>' . $this->wxr_cdata( $tag->name ) . '</wp:tag_name>';
 			$output .= '<wp:tag_description>' . $this->wxr_cdata( $tag->description ) . '</wp:tag_description>';
 			$output .= "</wp:tag>\n";
+		}
+
+		// Add custom taxonomy terms
+		foreach ( $taxonomies as $tax ) {
+			if ( in_array( $tax->name, array( 'category', 'post_tag' ) ) ) {
+				continue; // Already handled above
+			}
+
+			$terms = get_terms( array(
+				'taxonomy' => $tax->name,
+				'get'      => 'all',
+			) );
+
+			foreach ( $terms as $term ) {
+				$output .= "\t<wp:term>";
+				$output .= '<wp:term_id>' . $term->term_id . '</wp:term_id>';
+				$output .= '<wp:term_taxonomy>' . $this->wxr_cdata( $tax->name ) . '</wp:term_taxonomy>';
+				$output .= '<wp:term_slug>' . $this->wxr_cdata( $term->slug ) . '</wp:term_slug>';
+				$output .= '<wp:term_parent>' . $this->wxr_cdata( $term->parent ? get_term( $term->parent, $tax->name )->slug : '' ) . '</wp:term_parent>';
+				$output .= '<wp:term_name>' . $this->wxr_cdata( $term->name ) . '</wp:term_name>';
+				$output .= '<wp:term_description>' . $this->wxr_cdata( $term->description ) . '</wp:term_description>';
+				$output .= "</wp:term>\n";
+			}
 		}
 
 		// Add posts

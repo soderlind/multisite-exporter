@@ -186,7 +186,6 @@ class ME_Admin {
 
 			$export_args = [ 
 				'content'    => $sanitized_content_types,
-				'post_type'  => isset( $_POST[ 'post_type' ] ) ? sanitize_text_field( $_POST[ 'post_type' ] ) : '',
 				'start_date' => isset( $_POST[ 'start_date' ] ) ? sanitize_text_field( $_POST[ 'start_date' ] ) : '',
 				'end_date'   => isset( $_POST[ 'end_date' ] ) ? sanitize_text_field( $_POST[ 'end_date' ] ) : '',
 			];

@@ -62,11 +62,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><?php esc_html_e( 'Post Type (optional)', 'multisite-exporter' ); ?></th>
-				<td><input type="text" name="post_type"
-						placeholder="<?php esc_attr_e( 'e.g., product', 'multisite-exporter' ); ?>"></td>
-			</tr>
-			<tr>
 				<th scope="row"><?php esc_html_e( 'Start Date (YYYY-MM-DD)', 'multisite-exporter' ); ?></th>
 				<td><input type="date" name="start_date"></td>
 			</tr>
