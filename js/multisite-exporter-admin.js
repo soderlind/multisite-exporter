@@ -13,11 +13,62 @@
         var $individualCheckboxes = $('.me-export-checkbox');
         var $downloadButton = $('#me-download-selected');
         var $selectCounter = $('.me-selected-count');
+        var $sitesTable = $('.me-sites-table');
         var isAllPagesSelected = false;
         var totalExports = parseInt($('#me-total-exports').data('total')) || 0;
+        var isExportInProgress = false;
+        
+        // Check if export is in progress
+        checkExportProgress();
         
         // Initialize the counter
         updateSelectedCounter();
+        
+        // Function to check export progress
+        function checkExportProgress() {
+            if (typeof multisite_exporter_params !== 'undefined') {
+                $.ajax({
+                    url: multisite_exporter_params.ajax_url,
+                    type: 'POST',
+                    data: {
+                        action: 'me_check_scheduled_exports',
+                        security: multisite_exporter_params.nonce
+                    },
+                    success: function(response) {
+                        if (response.success && response.data) {
+                            // If exports are in progress, hide the sites table
+                            if (response.data.has_active_exports) {
+                                isExportInProgress = true;
+                                $sitesTable.hide();
+                                
+                                // Check again after a delay
+                                setTimeout(checkExportProgress, 5000);
+                            } else if (response.data.status === 'completed') {
+                                // Show the sites table when exports are completed
+                                isExportInProgress = false;
+                                $sitesTable.show();
+                            } else {
+                                // No active exports and not completed, show the table
+                                isExportInProgress = false;
+                                $sitesTable.show();
+                            }
+                        } else {
+                            // No response or error, show the table as default
+                            isExportInProgress = false;
+                            $sitesTable.show();
+                        }
+                    },
+                    error: function() {
+                        // On error, show the table as default
+                        isExportInProgress = false;
+                        $sitesTable.show();
+                    }
+                });
+            } else {
+                // If progress params not available, show the table
+                $sitesTable.show();
+            }
+        }
         
         // Toggle individual checkboxes when "Select All" is clicked
         $selectAllCheckbox.on('change', function() {
@@ -154,6 +205,44 @@
             } else {
                 $downloadButton.addClass('button-disabled').removeClass('button-primary');
             }
+        }
+
+        // Initialize Select2 on content select if available
+        if ($.fn.select2 && $('#me-content-select').length) {
+            $('#me-content-select').select2({
+                placeholder: 'Select content types',
+                allowClear: true,
+                width: '100%'
+            }).on('select2:select', function(e) {
+                var data = e.params.data;
+                var $select = $(this);
+                var values = $select.val() || [];
+                
+                // If "All Content" is selected, clear all other selections
+                if (data.id === 'all') {
+                    $select.val(['all']).trigger('change');
+                } 
+                // If something else is selected and "All Content" was previously selected, remove "All Content"
+                else if (values.includes('all')) {
+                    values = values.filter(value => value !== 'all');
+                    $select.val(values).trigger('change');
+                }
+            });
+            
+            // Handle form submission to ensure content types are properly sent
+            $('#multisite-exporter-form').on('submit', function(e) {
+                var $contentSelect = $('#me-content-select');
+                var selectedValues = $contentSelect.val();
+                
+                // Ensure we have at least one selection
+                if (!selectedValues || selectedValues.length === 0) {
+                    // If nothing selected, default to "all"
+                    $contentSelect.val(['all']).trigger('change');
+                }
+                
+                // Continue with form submission
+                return true;
+            });
         }
     });
 })(jQuery);

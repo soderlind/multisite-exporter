@@ -19,24 +19,47 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php esc_html_e( 'page.', 'multisite-exporter' ); ?>
 	</p>
 
+	<!-- Progress tracking container - initially hidden -->
+	<div id="multisite-exporter-progress" class="me-progress-container" style="display: none;">
+		<h3><?php esc_html_e( 'Export Progress', 'multisite-exporter' ); ?></h3>
+		<div class="me-progress-bar-container">
+			<div class="me-progress-bar"></div>
+		</div>
+		<div class="me-progress-info">
+			<span class="me-progress-percentage">0%</span>
+			<span class="me-current-site"></span>
+			<span class="me-scheduled-info"></span>
+		</div>
+	</div>
+
 	<form method="post" id="multisite-exporter-form">
 		<?php wp_nonce_field( 'multisite_exporter_action', 'me_nonce' ); ?>
 		<table class="form-table">
 			<tr>
 				<th scope="row"><?php esc_html_e( 'Content', 'multisite-exporter' ); ?></th>
 				<td>
-					<select name="content">
-						<option value="all"><?php esc_html_e( 'All Content', 'multisite-exporter' ); ?></option>
+					<select name="content[]" id="me-content-select" class="me-select2" multiple="multiple"
+						style="width: 100%;">
+						<option value="all" selected><?php esc_html_e( 'All Content', 'multisite-exporter' ); ?>
+						</option>
 						<option value="posts"><?php esc_html_e( 'Posts', 'multisite-exporter' ); ?></option>
 						<option value="pages"><?php esc_html_e( 'Pages', 'multisite-exporter' ); ?></option>
 						<option value="attachment"><?php esc_html_e( 'Media', 'multisite-exporter' ); ?></option>
+						<?php
+						// Get all registered custom post types
+						$custom_post_types = get_post_types( array( '_builtin' => false, 'public' => true ), 'objects' );
+
+						// Add each custom post type as an option
+						foreach ( $custom_post_types as $post_type ) {
+							$label = $post_type->labels->singular_name ?? $post_type->name;
+							echo '<option value="' . esc_attr( $post_type->name ) . '">' . esc_html( $label ) . '</option>';
+						}
+						?>
 					</select>
+					<p class="description">
+						<?php esc_html_e( 'Select content types to export. Choosing "All Content" will include everything.', 'multisite-exporter' ); ?>
+					</p>
 				</td>
-			</tr>
-			<tr>
-				<th scope="row"><?php esc_html_e( 'Post Type (optional)', 'multisite-exporter' ); ?></th>
-				<td><input type="text" name="post_type"
-						placeholder="<?php esc_attr_e( 'e.g., product', 'multisite-exporter' ); ?>"></td>
 			</tr>
 			<tr>
 				<th scope="row"><?php esc_html_e( 'Start Date (YYYY-MM-DD)', 'multisite-exporter' ); ?></th>

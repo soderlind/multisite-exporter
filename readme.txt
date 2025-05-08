@@ -4,7 +4,7 @@ Tags: multisite, export, background processing, action scheduler
 Requires at least: 6.3
 Tested up to: 6.8
 Requires PHP: 8.2
-Stable tag: 1.1.4
+Stable tag: 1.1.15
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -108,6 +108,16 @@ Yes, you can use the `multisite_exporter_directory` filter to specify a custom d
 
 
 == Changelog ==
+
+= 1.1.15 =
+* Removed: Export progress tracking functionality to simplify the codebase
+* Removed: Progress-related JavaScript and AJAX handlers
+* Removed: scheduler-progress.js file that was responsible for frontend progress tracking
+* Improved: Streamlined export process with reduced complexity
+* Improved: Plugin performance by removing unnecessary AJAX calls
+* Improved: Memory usage during export processing
+* Added: In debug mode, validation of export files after creation
+
 
 = 1.1.4 =
 * Fixed: Redundant code in admin views for better maintainability

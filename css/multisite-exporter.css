@@ -95,3 +95,79 @@
 	opacity: 0.6;
 	cursor: not-allowed;
 }
+
+/* JSON Formatting for Action Scheduler */
+.me-json-wrapper {
+	max-width: 100%;
+	overflow: auto;
+}
+
+.me-json-item {
+	margin-bottom: 10px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid #f0f0f0;
+}
+
+.me-json-item:last-child {
+	border-bottom: none;
+	padding-bottom: 0;
+}
+
+.me-json-key {
+	font-weight: bold;
+	color: #2271b1;
+	display: block;
+	margin-bottom: 5px;
+}
+
+.me-json-value {
+	display: block;
+	background-color: #f9f9f9;
+	padding: 8px;
+	border-radius: 3px;
+	border-left: 3px solid #2271b1;
+	font-family: monospace;
+	margin: 0;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+pre.me-json-value {
+	max-height: 300px;
+	overflow: auto;
+}
+
+/* Select2 WordPress Admin Integration */
+.select2-container--default .select2-selection--multiple {
+	border-color: #8c8f94;
+	border-radius: 3px;
+}
+
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+	outline: 2px solid transparent;
+}
+
+.select2-dropdown {
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+	background-color: #2271b1;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+	background-color: #f0f0f1;
+	border-color: #dcdcde;
+	color: #3c434a;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+	color: #2271b1;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+	color: #135e96;
+}

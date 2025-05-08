@@ -67,6 +67,9 @@ class Multisite_Exporter {
 
 		// Initialize classes
 		add_action( 'plugins_loaded', array( $this, 'init' ), 10 );
+
+		// Pretty format Action Scheduler arguments
+		add_filter( 'action_scheduler_list_table_column_args', array( $this, 'pretty_format_args' ), 10, 2 );
 	}
 
 	/**
@@ -78,7 +81,8 @@ class Multisite_Exporter {
 		// Core includes
 		include_once MULTISITE_EXPORTER_PLUGIN_DIR . 'includes/core/class-init.php';
 
-		// Export functionality
+		// Export includes
+		include_once MULTISITE_EXPORTER_PLUGIN_DIR . 'includes/export/class-wxr-validator.php';
 		include_once MULTISITE_EXPORTER_PLUGIN_DIR . 'includes/export/class-export.php';
 
 		// Admin includes
@@ -152,5 +156,28 @@ class Multisite_Exporter {
 	 */
 	public function action_scheduler_notice() {
 		echo '<div class="error"><p>' . esc_html__( 'Action Scheduler is required for Multisite Exporter to work. Please run composer install.', 'multisite-exporter' ) . '</p></div>';
+	}
+
+	/**
+	 * Pretty format Action Scheduler arguments as JSON
+	 * 
+	 * @param string $html The HTML to display for the args column.
+	 * @param array  $row  The row data.
+	 * @return string
+	 */
+	public function pretty_format_args( $html, $row ) {
+		// Return default HTML 
+		return $html;
+	}
+
+	/**
+	 * Highlight JSON string with syntax colors
+	 *
+	 * @param string $json JSON string to highlight
+	 * @return string Highlighted HTML
+	 */
+	private function highlight_json( $json ) {
+		// This function is no longer used
+		return $json;
 	}
 }

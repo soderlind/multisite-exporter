@@ -2,16 +2,16 @@
 # This file is distributed under the GPL2.
 msgid ""
 msgstr ""
-"Project-Id-Version: Multisite Exporter 1.1.1\n"
+"Project-Id-Version: Multisite Exporter 1.1.15\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/multisite-exporter\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-05-07T08:54:17+00:00\n"
+"POT-Creation-Date: 2025-05-08T16:10:46+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.11.0\n"
+"X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: multisite-exporter\n"
 
 #. Plugin Name of the plugin
@@ -35,175 +35,149 @@ msgstr ""
 msgid "https://soderlind.no"
 msgstr ""
 
-#: includes/admin/class-admin.php:127
-msgid "Processing"
+#: includes/admin/class-admin.php:113
+msgid "Processing..."
 msgstr ""
 
-#: includes/admin/class-admin.php:128
-#: includes/admin/class-admin.php:435
-msgid "Export completed successfully!"
-msgstr ""
-
-#: includes/admin/class-admin.php:129
-#: includes/admin/class-admin.php:340
-#: includes/admin/class-admin.php:396
-msgid "Currently exporting site"
-msgstr ""
-
-#: includes/admin/class-admin.php:163
-#: includes/admin/class-admin.php:164
-#: includes/admin/views/view-scheduled-actions-page.php:16
+#: includes/admin/class-admin.php:158
+#: includes/admin/class-admin.php:159
+#: includes/admin/views/view-scheduled-actions-page.php:37
 msgid "Scheduled Actions"
 msgstr ""
 
-#: includes/admin/class-admin.php:187
+#: includes/admin/class-admin.php:196
 msgid "Export has been scheduled for all subsites! View results in the"
 msgstr ""
 
-#: includes/admin/class-admin.php:187
-#: includes/admin/views/view-history-page.php:52
+#: includes/admin/class-admin.php:196
+#: includes/admin/views/view-history-page.php:160
 #: includes/admin/views/view-main-page.php:18
 msgid "Exports"
 msgstr ""
 
-#: includes/admin/class-admin.php:187
+#: includes/admin/class-admin.php:196
 #: includes/admin/views/view-main-page.php:19
 msgid "page."
 msgstr ""
 
-#: includes/admin/class-admin.php:236
+#: includes/admin/class-admin.php:245
 msgid "Security check failed."
 msgstr ""
 
-#: includes/admin/class-admin.php:255
+#: includes/admin/class-admin.php:264
 msgid "No exports selected."
 msgstr ""
 
-#: includes/admin/class-admin.php:271
+#: includes/admin/class-admin.php:286
 msgid "Could not create ZIP file."
 msgstr ""
 
 #. translators: %s: Comma-separated list of missing files
-#: includes/admin/class-admin.php:295
+#: includes/admin/class-admin.php:310
+#, php-format
 msgid "Could not find some export files: %s"
 msgstr ""
 
-#: includes/admin/class-admin.php:321
-#: includes/admin/class-admin.php:377
-msgid "Security check failed"
-msgstr ""
-
-#: includes/admin/class-admin.php:327
-#: includes/admin/class-admin.php:383
-msgid "You do not have permission to perform this action"
-msgstr ""
-
-#: includes/admin/class-admin.php:361
-#: includes/admin/class-admin.php:417
-msgid "%d sites pending export"
-msgstr ""
-
-#: includes/admin/views/view-history-page.php:59
-msgid "Export process is currently running."
-msgstr ""
-
-#: includes/admin/views/view-history-page.php:61
-msgid "Exports will appear here when they are completed."
-msgstr ""
-
-#: includes/admin/views/view-history-page.php:66
-msgid "View scheduled actions"
-msgstr ""
-
-#: includes/admin/views/view-history-page.php:86
-msgid "Download Selected"
-msgstr ""
-
-#: includes/admin/views/view-history-page.php:90
-msgid "Select All"
-msgstr ""
-
-#: includes/admin/views/view-history-page.php:92
-msgid "Deselect All"
-msgstr ""
-
-#. translators: %1$d: Number of items on current page, %2$d: Total number of items
-#: includes/admin/views/view-history-page.php:101
-msgid "All %1$d exports on this page are selected. "
-msgstr ""
-
-#. translators: %d: Total number of items
-#: includes/admin/views/view-history-page.php:110
-msgid "Select all %d exports across all pages"
-msgstr ""
-
-#. translators: %d: Total number of items
-#: includes/admin/views/view-history-page.php:122
-msgid "All %d exports across all pages are selected. "
-msgstr ""
-
-#: includes/admin/views/view-history-page.php:126
-msgid "Clear selection"
-msgstr ""
-
 #. translators: %s: Number of exports
-#: includes/admin/views/view-history-page.php:135
-#: includes/admin/views/view-history-page.php:263
+#: includes/admin/views/view-history-page.php:29
+#, php-format
 msgid "%s export"
 msgid_plural "%s exports"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/admin/views/view-history-page.php:147
-#: includes/admin/views/view-history-page.php:275
+#: includes/admin/views/view-history-page.php:41
 msgid "First page"
 msgstr ""
 
-#: includes/admin/views/view-history-page.php:162
-#: includes/admin/views/view-history-page.php:290
+#: includes/admin/views/view-history-page.php:56
 msgid "Previous page"
 msgstr ""
 
-#: includes/admin/views/view-history-page.php:178
-#: includes/admin/views/view-history-page.php:304
+#: includes/admin/views/view-history-page.php:73
+#: includes/admin/views/view-history-page.php:82
 msgid "of"
 msgstr ""
 
-#: includes/admin/views/view-history-page.php:187
-#: includes/admin/views/view-history-page.php:313
+#: includes/admin/views/view-history-page.php:92
 msgid "Next page"
 msgstr ""
 
-#: includes/admin/views/view-history-page.php:202
-#: includes/admin/views/view-history-page.php:328
+#: includes/admin/views/view-history-page.php:107
 msgid "Last page"
 msgstr ""
 
-#: includes/admin/views/view-history-page.php:221
+#: includes/admin/views/view-history-page.php:167
+msgid "Export process is currently running."
+msgstr ""
+
+#: includes/admin/views/view-history-page.php:169
+msgid "Exports will appear here when they are completed."
+msgstr ""
+
+#: includes/admin/views/view-history-page.php:174
+msgid "View scheduled actions"
+msgstr ""
+
+#: includes/admin/views/view-history-page.php:194
+msgid "Download Selected"
+msgstr ""
+
+#: includes/admin/views/view-history-page.php:198
+msgid "Select All"
+msgstr ""
+
+#: includes/admin/views/view-history-page.php:200
+msgid "Deselect All"
+msgstr ""
+
+#. translators: %1$d: Number of items on current page, %2$d: Total number of items
+#: includes/admin/views/view-history-page.php:209
+#, php-format
+msgid "All %1$d exports on this page are selected. "
+msgstr ""
+
+#. translators: %d: Total number of items
+#: includes/admin/views/view-history-page.php:218
+#, php-format
+msgid "Select all %d exports across all pages"
+msgstr ""
+
+#. translators: %d: Total number of items
+#: includes/admin/views/view-history-page.php:230
+#, php-format
+msgid "All %d exports across all pages are selected. "
+msgstr ""
+
+#: includes/admin/views/view-history-page.php:234
+msgid "Clear selection"
+msgstr ""
+
+#: includes/admin/views/view-history-page.php:246
 msgid "Blog ID"
 msgstr ""
 
-#: includes/admin/views/view-history-page.php:222
+#: includes/admin/views/view-history-page.php:247
 msgid "Site Name"
 msgstr ""
 
-#: includes/admin/views/view-history-page.php:223
+#: includes/admin/views/view-history-page.php:248
 msgid "Export File"
 msgstr ""
 
-#: includes/admin/views/view-history-page.php:224
+#: includes/admin/views/view-history-page.php:249
 msgid "Date"
 msgstr ""
 
-#: includes/admin/views/view-history-page.php:225
+#: includes/admin/views/view-history-page.php:250
 msgid "Actions"
 msgstr ""
 
-#: includes/admin/views/view-history-page.php:249
+#: includes/admin/views/view-history-page.php:274
 msgid "Download"
 msgstr ""
 
-#: includes/admin/views/view-history-page.php:346
+#: includes/admin/views/view-history-page.php:290
 msgid "No exports found."
 msgstr ""
 
@@ -211,62 +185,77 @@ msgstr ""
 msgid "This tool exports content from all subsites in your multisite installation. Exports are saved to a common folder and can be downloaded from the"
 msgstr ""
 
-#: includes/admin/views/view-main-page.php:26
-msgid "Content"
-msgstr ""
-
-#: includes/admin/views/view-main-page.php:29
-msgid "All Content"
-msgstr ""
-
-#: includes/admin/views/view-main-page.php:30
-msgid "Posts"
-msgstr ""
-
-#: includes/admin/views/view-main-page.php:31
-msgid "Pages"
-msgstr ""
-
-#: includes/admin/views/view-main-page.php:32
-msgid "Media"
-msgstr ""
-
-#: includes/admin/views/view-main-page.php:37
-msgid "Post Type (optional)"
+#: includes/admin/views/view-main-page.php:24
+msgid "Export Progress"
 msgstr ""
 
 #: includes/admin/views/view-main-page.php:39
-msgid "e.g., product"
+msgid "Content"
 msgstr ""
 
-#: includes/admin/views/view-main-page.php:42
-msgid "Start Date (YYYY-MM-DD)"
+#: includes/admin/views/view-main-page.php:43
+msgid "All Content"
+msgstr ""
+
+#: includes/admin/views/view-main-page.php:45
+msgid "Posts"
 msgstr ""
 
 #: includes/admin/views/view-main-page.php:46
+msgid "Pages"
+msgstr ""
+
+#: includes/admin/views/view-main-page.php:47
+msgid "Media"
+msgstr ""
+
+#: includes/admin/views/view-main-page.php:60
+msgid "Select content types to export. Choosing \"All Content\" will include everything."
+msgstr ""
+
+#: includes/admin/views/view-main-page.php:65
+msgid "Start Date (YYYY-MM-DD)"
+msgstr ""
+
+#: includes/admin/views/view-main-page.php:69
 msgid "End Date (YYYY-MM-DD)"
 msgstr ""
 
-#: includes/admin/views/view-main-page.php:50
+#: includes/admin/views/view-main-page.php:73
 msgid "Run Export for All Subsites"
 msgstr ""
 
-#: includes/admin/views/view-scheduled-actions-page.php:17
+#: includes/admin/views/view-scheduled-actions-page.php:23
+#, php-format
+msgid "%s scheduled action deleted successfully."
+msgid_plural "%s scheduled actions deleted successfully."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/admin/views/view-scheduled-actions-page.php:38
 msgid "Action Scheduler is not available. Please make sure it is properly installed."
 msgstr ""
 
-#: includes/admin/views/view-scheduled-actions-page.php:164
+#: includes/admin/views/view-scheduled-actions-page.php:158
+msgid "Delete"
+msgstr ""
+
+#: includes/admin/views/view-scheduled-actions-page.php:175
+msgid "Select item"
+msgstr ""
+
+#: includes/admin/views/view-scheduled-actions-page.php:339
 msgid "Export Tasks"
 msgstr ""
 
-#: includes/admin/views/view-scheduled-actions-page.php:165
+#: includes/admin/views/view-scheduled-actions-page.php:340
 msgid "This page shows only the export tasks for Multisite Exporter."
 msgstr ""
 
-#: includes/class-multisite-exporter.php:133
+#: includes/class-multisite-exporter.php:149
 msgid "Multisite Exporter only works on multisite installations."
 msgstr ""
 
-#: includes/class-multisite-exporter.php:142
+#: includes/class-multisite-exporter.php:158
 msgid "Action Scheduler is required for Multisite Exporter to work. Please run composer install."
 msgstr ""

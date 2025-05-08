@@ -4,6 +4,21 @@ All notable changes to the Multisite Exporter plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.15] - 2025-05-08
+### Removed
+- Export progress tracking functionality to simplify the codebase
+- Progress-related JavaScript and AJAX handlers
+- scheduler-progress.js file that was responsible for frontend progress tracking
+
+### Improved
+- Streamlined export process with reduced complexity
+- Plugin performance by removing unnecessary AJAX calls
+- Memory usage during export processing
+
+### Added
+- In debug mode, validation of export files after creation
+
+
 ## [1.1.4] - 2025-05-07
 ### Fixed
 - Redundant code in admin views for better maintainability

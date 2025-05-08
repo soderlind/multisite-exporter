@@ -201,8 +201,8 @@ class ME_Filtered_List_Table extends ActionScheduler_ListTable {
 			'per_page' => $per_page,
 			'offset'   => $this->get_items_offset(),
 			'status'   => $this->get_request_status(),
-			'orderby'  => $this->get_request_orderby(),
-			'order'    => $this->get_request_order(),
+			'orderby'  => 'date', // Always sort by date
+			'order'    => 'DESC', // Always show latest first
 			'search'   => $this->get_request_search_query(),
 			'hook'     => 'me_process_site_export', // Always include our hook filter
 		);
