@@ -70,17 +70,17 @@ class ME_Admin {
 			return;
 		}
 
-		// Enqueue Select2 library
+		// Enqueue Select2 library from local files
 		wp_enqueue_style(
 			'select2',
-			'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css',
+			MULTISITE_EXPORTER_PLUGIN_URL . 'assets/vendor/select2/select2.min.css',
 			array(),
 			'4.1.0'
 		);
 
 		wp_enqueue_script(
 			'select2',
-			'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js',
+			MULTISITE_EXPORTER_PLUGIN_URL . 'assets/vendor/select2/select2.min.js',
 			array( 'jquery' ),
 			'4.1.0',
 			true
