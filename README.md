@@ -160,6 +160,17 @@ This ensures that:
 - In development environments with WP_DEBUG enabled, you'll see detailed logs about the export process
 - In production environments with WP_DEBUG disabled, no error messages will be written to the log files
 
+### WXR Validation
+
+Multisite Exporter includes a WXR (WordPress eXtended RSS) validator that checks the integrity of export files:
+
+- **Automatic Validation**: Each export file is automatically validated after creation
+- **XML Structure Check**: Ensures the export file has valid XML structure
+- **WXR Schema Validation**: Validates against WordPress WXR format requirements
+- **Error Detection**: Identifies and logs specific issues in malformed export files
+
+The validator helps troubleshoot problematic exports and ensures your export files will be compatible with WordPress import tools.
+
 ### Common Log Messages
 
 When WP_DEBUG is enabled, you may see the following messages in your WordPress debug log:
@@ -168,6 +179,7 @@ When WP_DEBUG is enabled, you may see the following messages in your WordPress d
 - Export progress: Notifications when exports start and complete for each blog
 - File operations: Information about file cleanup and management
 - Error handling: Details about any issues encountered during the export process
+- WXR validation: Results of export file validation checks
 
 ### Enabling Debug Mode
 

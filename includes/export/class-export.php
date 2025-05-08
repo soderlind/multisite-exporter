@@ -1,8 +1,8 @@
 <?php
 /**
- * Export functionality class.
+ * Export class.
  *
- * @since      1.0.1
+ * @since 1.0.1
  * @package    Multisite_Exporter
  * @subpackage Multisite_Exporter/Export
  */
@@ -13,7 +13,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Export functionality class.
+ * Export class.
+ *
+ * This class handles the export functionality of the plugin.
+ *
+ * @since      1.0.1
+ * @package    Multisite_Exporter
+ * @subpackage Multisite_Exporter/Export
  */
 class ME_Export {
 
@@ -26,7 +32,15 @@ class ME_Export {
 	protected static $_instance = null;
 
 	/**
-	 * Main ME_Export Instance.
+	 * WXR validator instance
+	 *
+	 * @since 1.0.2
+	 * @var ME_WXR_Validator
+	 */
+	protected $validator = null;
+
+	/**
+	 * Main Export Instance.
 	 *
 	 * @return ME_Export - Main instance.
 	 */
@@ -38,10 +52,15 @@ class ME_Export {
 	}
 
 	/**
-	 * Constructor.
+	 * Export Constructor.
 	 */
 	public function __construct() {
-		// Constructor code here if needed
+		// Initialize the validator
+		$this->validator = ME_WXR_Validator::instance();
+
+		// Set up action hooks for export process
+		add_action( 'admin_post_export_site', array( $this, 'process_export_site' ) );
+		add_action( 'multisite_exporter_process_scheduled_export', array( $this, 'process_scheduled_export' ), 10, 5 );
 	}
 
 	/**
@@ -72,7 +91,7 @@ class ME_Export {
 
 		// Set default arguments
 		$defaults = [ 
-			'content'    => 'all',
+			'content'    => array( 'all' ),
 			'author'     => false,
 			'category'   => false,
 			'start_date' => false,
@@ -81,6 +100,11 @@ class ME_Export {
 			'post_type'  => '',
 		];
 		$args     = wp_parse_args( $args, $defaults );
+
+		// Ensure content is always an array
+		if ( ! is_array( $args[ 'content' ] ) ) {
+			$args[ 'content' ] = array( $args[ 'content' ] );
+		}
 
 		// Start XML output
 		$output = '<?xml version="1.0" encoding="' . get_bloginfo( 'charset' ) . "\" ?>\n";
@@ -106,27 +130,45 @@ class ME_Export {
 		$where = "post_status != 'auto-draft'";
 		$join  = "";
 
-		if ( 'all' !== $args[ 'content' ] && post_type_exists( $args[ 'content' ] ) ) {
-			$ptype = get_post_type_object( $args[ 'content' ] );
-			if ( ! $ptype->can_export ) {
-				$args[ 'content' ] = 'post';
-			}
-			$where .= $wpdb->prepare( " AND post_type = %s", $args[ 'content' ] );
-		} else if ( $args[ 'post_type' ] ) {
-			$where .= $wpdb->prepare( " AND post_type = %s", $args[ 'post_type' ] );
-		} else {
+		// Handle content selection based on content types array
+		if ( in_array( 'all', $args[ 'content' ] ) ) {
+			// If 'all' is selected, get all exportable post types
 			$post_types   = get_post_types( [ 'can_export' => true ] );
 			$placeholders = implode( ',', array_fill( 0, count( $post_types ), '%s' ) );
 			$where .= $wpdb->prepare( " AND post_type IN ($placeholders)", $post_types );
+		} else {
+			// If specific post types are selected, use those
+			$selected_types = array();
+
+			// First check for specific named content types
+			foreach ( $args[ 'content' ] as $content_type ) {
+				if ( post_type_exists( $content_type ) ) {
+					$ptype = get_post_type_object( $content_type );
+					if ( $ptype->can_export ) {
+						$selected_types[] = $content_type;
+					}
+				}
+			}
+
+			// If user specified a post_type parameter, add it
+			if ( ! empty( $args[ 'post_type' ] ) ) {
+				$selected_types[] = $args[ 'post_type' ];
+			}
+
+			// Handle the selected post types
+			if ( ! empty( $selected_types ) ) {
+				$placeholders = implode( ',', array_fill( 0, count( $selected_types ), '%s' ) );
+				$where .= $wpdb->prepare( " AND post_type IN ($placeholders)", $selected_types );
+			}
 		}
 
 		// Filter by status
-		if ( $args[ 'status' ] && ( 'post' === $args[ 'content' ] || 'page' === $args[ 'content' ] ) ) {
+		if ( $args[ 'status' ] ) {
 			$where .= $wpdb->prepare( " AND post_status = %s", $args[ 'status' ] );
 		}
 
 		// Filter by category
-		if ( $args[ 'category' ] && 'post' === $args[ 'content' ] ) {
+		if ( $args[ 'category' ] ) {
 			$term = term_exists( $args[ 'category' ], 'category' );
 			if ( $term ) {
 				$join  = "INNER JOIN {$wpdb->term_relationships} ON ({$wpdb->posts}.ID = {$wpdb->term_relationships}.object_id)";
@@ -282,6 +324,11 @@ class ME_Export {
 
 		$output .= "</channel>\n";
 		$output .= "</rss>";
+
+		// Validate the XML if WP_DEBUG is enabled
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			$this->validator->validate_export( $output );
+		}
 
 		return $output;
 	}

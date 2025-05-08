@@ -206,5 +206,43 @@
                 $downloadButton.addClass('button-disabled').removeClass('button-primary');
             }
         }
+
+        // Initialize Select2 on content select if available
+        if ($.fn.select2 && $('#me-content-select').length) {
+            $('#me-content-select').select2({
+                placeholder: 'Select content types',
+                allowClear: true,
+                width: '100%'
+            }).on('select2:select', function(e) {
+                var data = e.params.data;
+                var $select = $(this);
+                var values = $select.val() || [];
+                
+                // If "All Content" is selected, clear all other selections
+                if (data.id === 'all') {
+                    $select.val(['all']).trigger('change');
+                } 
+                // If something else is selected and "All Content" was previously selected, remove "All Content"
+                else if (values.includes('all')) {
+                    values = values.filter(value => value !== 'all');
+                    $select.val(values).trigger('change');
+                }
+            });
+            
+            // Handle form submission to ensure content types are properly sent
+            $('#multisite-exporter-form').on('submit', function(e) {
+                var $contentSelect = $('#me-content-select');
+                var selectedValues = $contentSelect.val();
+                
+                // Ensure we have at least one selection
+                if (!selectedValues || selectedValues.length === 0) {
+                    // If nothing selected, default to "all"
+                    $contentSelect.val(['all']).trigger('change');
+                }
+                
+                // Continue with form submission
+                return true;
+            });
+        }
     });
 })(jQuery);

@@ -57,13 +57,6 @@ class ME_Admin {
 		// AJAX handlers
 		add_action( 'wp_ajax_me_download_export', array( $this, 'handle_export_download' ) );
 		add_action( 'wp_ajax_me_download_selected_exports', array( $this, 'download_selected_exports' ) );
-
-		// AJAX handlers for scheduler progress
-		add_action( 'wp_ajax_me_check_scheduled_exports', array( $this, 'check_scheduled_exports' ) );
-		add_action( 'wp_ajax_me_check_scheduled_progress', array( $this, 'check_scheduled_progress' ) );
-
-		// Track export progress in Action Scheduler
-		add_action( 'me_export_progress_update', array( $this, 'update_export_progress' ), 10, 3 );
 	}
 
 	/**
@@ -77,6 +70,22 @@ class ME_Admin {
 			return;
 		}
 
+		// Enqueue Select2 library
+		wp_enqueue_style(
+			'select2',
+			'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css',
+			array(),
+			'4.1.0'
+		);
+
+		wp_enqueue_script(
+			'select2',
+			'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js',
+			array( 'jquery' ),
+			'4.1.0',
+			true
+		);
+
 		// Enqueue common styles
 		wp_enqueue_style(
 			'multisite-exporter-styles',
@@ -89,9 +98,21 @@ class ME_Admin {
 		wp_enqueue_script(
 			'multisite-exporter-admin',
 			MULTISITE_EXPORTER_PLUGIN_URL . 'js/multisite-exporter-admin.js',
-			array( 'jquery' ),
+			array( 'jquery', 'select2' ),
 			filemtime( MULTISITE_EXPORTER_PLUGIN_DIR . 'js/multisite-exporter-admin.js' ),
 			true
+		);
+
+		// Localize the admin script with necessary variables
+		wp_localize_script(
+			'multisite-exporter-admin',
+			'me_admin_vars',
+			array(
+				'ajax_url'       => admin_url( 'admin-ajax.php' ),
+				'download_nonce' => wp_create_nonce( 'download_selected_exports' ),
+				'processing'     => esc_html__( 'Processing...', 'multisite-exporter' ),
+				'content_nonce'  => wp_create_nonce( 'multisite_exporter_content_nonce' ),
+			)
 		);
 
 		// Enqueue page-specific scripts
@@ -104,32 +125,6 @@ class ME_Admin {
 				true
 			);
 			return;
-		}
-
-		// Enqueue the scheduler progress script on the main page
-		if ( strpos( $hook, 'multisite-exporter' ) !== false ) {
-			wp_enqueue_script(
-				'multisite-exporter-scheduler-progress',
-				MULTISITE_EXPORTER_PLUGIN_URL . 'js/scheduler-progress.js',
-				array( 'jquery' ),
-				filemtime( MULTISITE_EXPORTER_PLUGIN_DIR . 'js/scheduler-progress.js' ),
-				true
-			);
-
-			// Pass variables to the script
-			wp_localize_script(
-				'multisite-exporter-scheduler-progress',
-				'multisite_exporter_params',
-				array(
-					'ajax_url' => admin_url( 'admin-ajax.php' ),
-					'nonce'    => wp_create_nonce( 'multisite_exporter_progress_nonce' ),
-					'messages' => array(
-						'processing'   => esc_html__( 'Processing', 'multisite-exporter' ),
-						'completed'    => esc_html__( 'Export completed successfully!', 'multisite-exporter' ),
-						'current_site' => esc_html__( 'Currently exporting site', 'multisite-exporter' ),
-					),
-				)
-			);
 		}
 	}
 
@@ -174,11 +169,26 @@ class ME_Admin {
 	public function render_main_page() {
 		// Add nonce for security
 		if ( isset( $_POST[ 'me_run' ] ) && check_admin_referer( 'multisite_exporter_action', 'me_nonce' ) ) {
+			// Handle multiple content types selection
+			$content_types = isset( $_POST[ 'content' ] ) && is_array( $_POST[ 'content' ] ) ?
+				$_POST[ 'content' ] : array( 'all' );
+
+			// Process content types (sanitize and handle "all" selection)
+			$sanitized_content_types = array();
+			foreach ( $content_types as $content_type ) {
+				$sanitized_content_types[] = sanitize_text_field( $content_type );
+			}
+
+			// If "all" is selected, ignore other selections
+			if ( in_array( 'all', $sanitized_content_types ) ) {
+				$sanitized_content_types = array( 'all' );
+			}
+
 			$export_args = [ 
-				'content'    => sanitize_text_field( $_POST[ 'content' ] ?? 'all' ),
-				'post_type'  => sanitize_text_field( $_POST[ 'post_type' ] ?? '' ),
-				'start_date' => sanitize_text_field( $_POST[ 'start_date' ] ?? '' ),
-				'end_date'   => sanitize_text_field( $_POST[ 'end_date' ] ?? '' ),
+				'content'    => $sanitized_content_types,
+				'post_type'  => isset( $_POST[ 'post_type' ] ) ? sanitize_text_field( $_POST[ 'post_type' ] ) : '',
+				'start_date' => isset( $_POST[ 'start_date' ] ) ? sanitize_text_field( $_POST[ 'start_date' ] ) : '',
+				'end_date'   => isset( $_POST[ 'end_date' ] ) ? sanitize_text_field( $_POST[ 'end_date' ] ) : '',
 			];
 
 			$init = ME_Init::instance();
@@ -316,221 +326,5 @@ class ME_Admin {
 		readfile( $temp_file );
 		unlink( $temp_file );
 		exit;
-	}
-
-	/**
-	 * Get export progress data for AJAX requests
-	 * 
-	 * Shared helper method for both check_scheduled_exports and check_scheduled_progress
-	 * Eliminates duplicate code and centralizes the progress data collection logic
-	 * 
-	 * @return array Progress data array with uniform structure
-	 */
-	private function get_export_progress_data() {
-		// Default progress data
-		$progress_data = array(
-			'has_active_exports'   => false,
-			'percentage'           => 0,
-			'current_site'         => '',
-			'current_site_message' => __( 'Currently exporting site', 'multisite-exporter' ),
-			'scheduled_info'       => '',
-			'status'               => 'in_progress',
-		);
-
-		// Get active exports from Action Scheduler
-		$active_exports                        = $this->get_active_export_actions();
-		$has_active_exports                    = ! empty( $active_exports );
-		$progress_data[ 'has_active_exports' ] = $has_active_exports;
-
-		if ( $has_active_exports ) {
-			// Get the export batch ID from the first action
-			$first_action = reset( $active_exports );
-			$batch_id     = $first_action->get_args()[ 0 ] ?? '';
-
-			// Get progress data from network option
-			$export_progress = get_network_option( get_main_network_id(), 'multisite_exporter_progress_' . $batch_id, array() );
-
-			if ( ! empty( $export_progress ) ) {
-				$progress_data[ 'percentage' ]   = $export_progress[ 'percentage' ] ?? 0;
-				$progress_data[ 'current_site' ] = $export_progress[ 'current_site' ] ?? '';
-				$progress_data[ 'status' ]       = $export_progress[ 'status' ] ?? 'in_progress';
-
-				// Calculate scheduled actions info
-				$total_actions                     = count( $active_exports );
-				$scheduled_info                    = sprintf(
-					__( '%d sites pending export', 'multisite-exporter' ),
-					$total_actions
-				);
-				$progress_data[ 'scheduled_info' ] = $scheduled_info;
-			}
-		} else {
-			// No active exports, check if we have just completed one
-			$completed_batches = get_network_option( get_main_network_id(), 'multisite_exporter_completed_batches', array() );
-
-			if ( ! empty( $completed_batches ) ) {
-				$latest_batch = end( $completed_batches );
-
-				// Get the latest batch progress data
-				$export_progress = get_network_option( get_main_network_id(), 'multisite_exporter_progress_' . $latest_batch, array() );
-
-				if ( ! empty( $export_progress ) && isset( $export_progress[ 'status' ] ) && $export_progress[ 'status' ] === 'completed' ) {
-					$progress_data[ 'percentage' ]         = 100;
-					$progress_data[ 'status' ]             = 'completed';
-					$progress_data[ 'completion_message' ] = __( 'Export completed successfully!', 'multisite-exporter' );
-					$progress_data[ 'redirect_url' ]       = admin_url( 'admin.php?page=multisite-exporter-history' );
-				}
-			}
-		}
-
-		return $progress_data;
-	}
-
-	/**
-	 * Check for active scheduled exports via AJAX
-	 */
-	public function check_scheduled_exports() {
-		// Verify nonce
-		if ( ! check_ajax_referer( 'multisite_exporter_progress_nonce', 'security', false ) ) {
-			wp_send_json_error( array( 'message' => __( 'Security check failed', 'multisite-exporter' ) ) );
-			return;
-		}
-
-		// Check capabilities
-		if ( ! current_user_can( 'manage_network' ) ) {
-			wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action', 'multisite-exporter' ) ) );
-			return;
-		}
-
-		// Get progress data from the shared helper method
-		$progress_data = $this->get_export_progress_data();
-
-		wp_send_json_success( $progress_data );
-	}
-
-	/**
-	 * Check for progress updates via AJAX
-	 */
-	public function check_scheduled_progress() {
-		// Verify nonce
-		if ( ! check_ajax_referer( 'multisite_exporter_progress_nonce', 'security', false ) ) {
-			wp_send_json_error( array( 'message' => __( 'Security check failed', 'multisite-exporter' ) ) );
-			return;
-		}
-
-		// Check capabilities
-		if ( ! current_user_can( 'manage_network' ) ) {
-			wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action', 'multisite-exporter' ) ) );
-			return;
-		}
-
-		// Get progress data from the shared helper method
-		$progress_data = $this->get_export_progress_data();
-
-		wp_send_json_success( $progress_data );
-	}
-
-	/**
-	 * Update export progress when action is running
-	 * 
-	 * @param string $batch_id    The export batch ID.
-	 * @param string $current_site The name of the site being exported.
-	 * @param int    $percentage  The progress percentage.
-	 */
-	public function update_export_progress( $batch_id, $current_site, $percentage ) {
-		// Get existing progress data or initialize new array
-		$progress_data = get_network_option( get_main_network_id(), 'multisite_exporter_progress_' . $batch_id, array(
-			'batch_id'     => $batch_id,
-			'start_time'   => time(),
-			'percentage'   => 0,
-			'current_site' => '',
-			'status'       => 'in_progress',
-		) );
-
-		// Update progress data
-		$progress_data[ 'percentage' ]   = $percentage;
-		$progress_data[ 'current_site' ] = $current_site;
-
-		// If 100%, mark as completed
-		if ( $percentage >= 100 ) {
-			$progress_data[ 'status' ]   = 'completed';
-			$progress_data[ 'end_time' ] = time();
-
-			// Add to completed batches list
-			$completed_batches   = get_network_option( get_main_network_id(), 'multisite_exporter_completed_batches', array() );
-			$completed_batches[] = $batch_id;
-			update_network_option( get_main_network_id(), 'multisite_exporter_completed_batches', $completed_batches );
-		}
-
-		// Save updated progress data
-		update_network_option( get_main_network_id(), 'multisite_exporter_progress_' . $batch_id, $progress_data );
-	}
-
-	/**
-	 * Get active export actions from Action Scheduler
-	 * 
-	 * @return array Array of ActionScheduler_Action objects
-	 */
-	private function get_active_export_actions() {
-		// Make sure Action Scheduler is loaded
-		if ( ! class_exists( 'ActionScheduler' ) ) {
-			return array();
-		}
-
-		// Get the action store
-		$store = ActionScheduler::store();
-
-		// Get pending actions for our hook
-		$actions = $store->query_actions( array(
-			'hook'     => 'me_process_site_export',
-			'status'   => ActionScheduler_Store::STATUS_PENDING,
-			'per_page' => -1, // Get all
-		) );
-
-		// Get running actions too
-		$running_actions = $store->query_actions( array(
-			'hook'     => 'me_process_site_export',
-			'status'   => ActionScheduler_Store::STATUS_RUNNING,
-			'per_page' => -1, // Get all
-		) );
-
-		// Combine pending and running actions
-		$actions = array_merge( $actions, $running_actions );
-
-		return $actions;
-	}
-
-	/**
-	 * Force Action Scheduler query args to only show our hook
-	 */
-	public function force_hook_filter( $query_args ) {
-		$query_args[ 'hook' ] = 'me_process_site_export';
-		return $query_args;
-	}
-
-	/**
-	 * Filter the SQL query directly if needed
-	 */
-	public function filter_as_sql_query( $sql ) {
-		global $wpdb;
-
-		// Only modify the SQL if we're on our custom page
-		if ( isset( $_GET[ 'page' ] ) && $_GET[ 'page' ] === 'me-scheduled-actions' ) {
-			// Ensure the SQL contains a WHERE clause for our hook
-			if ( ! strpos( $sql, "hook = 'me_process_site_export'" ) ) {
-				// If there's a WHERE clause, add our condition
-				if ( strpos( $sql, 'WHERE' ) !== false ) {
-					$sql = str_replace(
-						'WHERE',
-						"WHERE (a.hook = 'me_process_site_export') AND ",
-						$sql
-					);
-				} else {
-					// If no WHERE clause exists, add one
-					$sql .= " WHERE (a.hook = 'me_process_site_export')";
-				}
-			}
-		}
-
-		return $sql;
 	}
 }
