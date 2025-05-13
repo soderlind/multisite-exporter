@@ -4,6 +4,15 @@ All notable changes to the Multisite Exporter plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.6] - 2025-05-14
+### Added
+- Alternating row colors in export tables for improved readability
+- CSS styling enhancements for better visual hierarchy
+
+### Improved
+- Table display with consistent background colors for even rows
+- Visual distinction between rows in export history tables
+
 ## [1.1.5] - 2025-05-08
 ### Removed
 - Export progress tracking functionality to simplify the codebase

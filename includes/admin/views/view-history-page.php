@@ -239,7 +239,7 @@ $exports = array_slice( $all_exports, $offset, $per_page );
 				<?php endif; ?>
 			</div>
 
-			<table class="widefat fixed" style="margin-top: 20px;">
+			<table class="widefat fixed me-export-table" style="margin-top: 20px;">
 				<thead>
 					<tr>
 						<th class="check-column"><input type="checkbox" id="cb-select-all"></th>
