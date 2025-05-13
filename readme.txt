@@ -4,7 +4,7 @@ Tags: multisite, export, background processing, action scheduler
 Requires at least: 6.3
 Tested up to: 6.8
 Requires PHP: 8.2
-Stable tag: 1.1.6
+Stable tag: 1.1.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -109,6 +109,9 @@ Yes, you can use the `multisite_exporter_directory` filter to specify a custom d
 
 == Changelog ==
 
+= 1.1.7 =
+* Improved: Conditional display of pagination text for selected exports: now shows "across all pages" only when there is more than one page of results
+
 = 1.1.6 =
 * Added: Alternating row colors in export tables for improved readability
 * Added: CSS styling enhancements for better visual hierarchy
@@ -180,6 +183,9 @@ Yes, you can use the `multisite_exporter_directory` filter to specify a custom d
 * Full internationalization support with POT file
 
 == Upgrade Notice ==
+
+= 1.1.7 =
+Added export status tracking with real-time progress indicators and automatic redirects when exports complete.
 
 = 1.1.0 =
 Improved code organization and UI enhancements for export selection.

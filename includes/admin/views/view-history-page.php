@@ -213,11 +213,19 @@ $exports = array_slice( $all_exports, $offset, $per_page );
 					</span>
 					<a href="#" id="select-across-pages">
 						<?php
-						printf(
-							/* translators: %d: Total number of items */
-							esc_html__( 'Select all %d exports across all pages', 'multisite-exporter' ),
-							$total_exports
-						);
+						if ( $total_pages > 1 ) {
+							printf(
+								/* translators: %d: Total number of items */
+								esc_html__( 'Select all %d exports across all pages', 'multisite-exporter' ),
+								$total_exports
+							);
+						} else {
+							printf(
+								/* translators: %d: Total number of items */
+								esc_html__( 'Select all %d exports', 'multisite-exporter' ),
+								$total_exports
+							);
+						}
 						?>
 					</a>
 				</div>
@@ -225,11 +233,19 @@ $exports = array_slice( $all_exports, $offset, $per_page );
 				<div id="all-selected-notice" class="alignleft hidden"
 					style="margin-left: 10px; padding: 5px; background-color: #f7f7f7; border: 1px solid #ccc; display: none;">
 					<?php
-					printf(
-						/* translators: %d: Total number of items */
-						esc_html__( 'All %d exports across all pages are selected. ', 'multisite-exporter' ),
-						$total_exports
-					);
+					if ( $total_pages > 1 ) {
+						printf(
+							/* translators: %d: Total number of items */
+							esc_html__( 'All %d exports across all pages are selected. ', 'multisite-exporter' ),
+							$total_exports
+						);
+					} else {
+						printf(
+							/* translators: %d: Total number of items */
+							esc_html__( 'All %d exports are selected. ', 'multisite-exporter' ),
+							$total_exports
+						);
+					}
 					?>
 					<a href="#" id="clear-selection"><?php esc_html_e( 'Clear selection', 'multisite-exporter' ); ?></a>
 				</div>

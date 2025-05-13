@@ -4,6 +4,10 @@ All notable changes to the Multisite Exporter plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.7] - 2025-05-14
+### Added
+- Conditional display of pagination text for selected exports: now shows "across all pages" only when there is more than one page of results.
+
 ## [1.1.6] - 2025-05-14
 ### Added
 - Alternating row colors in export tables for improved readability
