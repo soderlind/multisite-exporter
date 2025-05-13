@@ -45,6 +45,10 @@
 	background-color: #f9f9f9;
 }
 
+.me-export-table tr:nth-child(even) {
+	background-color: #f6f7f7;
+}
+
 /* Styles for the selection controls */
 .me-selection-controls {
 	display: flex;

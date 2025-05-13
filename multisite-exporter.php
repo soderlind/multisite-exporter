@@ -2,7 +2,7 @@
 /*
 Plugin Name: Multisite Exporter
 Description: Runs WordPress Exporter on each subsite in a multisite, in the background.
-Version: 1.1.5
+Version: 1.1.6
 Author: Per Søderlind
 Author URI: https://soderlind.no
 License: GPL2
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
-define( 'MULTISITE_EXPORTER_VERSION', '1.1.5' );
+define( 'MULTISITE_EXPORTER_VERSION', '1.1.6' );
 define( 'MULTISITE_EXPORTER_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'MULTISITE_EXPORTER_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'MULTISITE_EXPORTER_PLUGIN_FILE', __FILE__ );

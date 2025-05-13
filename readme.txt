@@ -4,7 +4,7 @@ Tags: multisite, export, background processing, action scheduler
 Requires at least: 6.3
 Tested up to: 6.8
 Requires PHP: 8.2
-Stable tag: 1.1.5
+Stable tag: 1.1.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -108,6 +108,12 @@ Yes, you can use the `multisite_exporter_directory` filter to specify a custom d
 
 
 == Changelog ==
+
+= 1.1.6 =
+* Added: Alternating row colors in export tables for improved readability
+* Added: CSS styling enhancements for better visual hierarchy
+* Improved: Table display with consistent background colors for even rows
+* Improved: Visual distinction between rows in export history tables
 
 = 1.1.5 =
 * Removed: Export progress tracking functionality to simplify the codebase
