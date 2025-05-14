@@ -21,6 +21,7 @@ Multisite Exporter is a powerful tool for WordPress multisite administrators who
 * **Centralized Storage**: All export files are stored in a common location for easy access
 * **Bulk Downloads**: Select multiple export files and download them as a single zip file
 * **User-Friendly Interface**: Simple, intuitive interface for configuring exports and accessing files
+* **WP CLI Support**: Run exports directly from the command line with powerful filtering options
 * **Fully Translatable**: The plugin is fully internationalized and ready for translation
 * **Customizable Export Directory**: Change where your exports are stored using a simple filter hook
 

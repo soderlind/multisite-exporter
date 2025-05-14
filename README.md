@@ -13,6 +13,7 @@ https://github.com/user-attachments/assets/172e2f69-3ea1-443d-b46f-fcdc82e11db4
 - Filter exports by content type, post type, and date range
 - Centralized export file storage for easy access to all exports
 - Select and download multiple export files as a zip archive
+- Powerful WP CLI commands for automated/scripted exports
 - Fully translatable with .pot file included
 - Customizable export directory location via filter
 
