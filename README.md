@@ -3,8 +3,7 @@ Multisite Exporter is a WordPress plugin that allows you to export content from 
 
 [Features](#features) | [Requirements](#requirements) | [Installation](#installation) | [Usage](#usage) | [Action Scheduler](#how-action-scheduler-works) | [Export File Storage](#export-file-storage) | [Translation](#translation) | [Debugging](#debugging)
 
-https://github.com/user-attachments/assets/1e8ce516-1b0e-47f4-9128-e615bebadd89
-
+https://github.com/user-attachments/assets/172e2f69-3ea1-443d-b46f-fcdc82e11db4
 
 
 ## Features
