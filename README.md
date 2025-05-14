@@ -25,19 +25,19 @@ https://github.com/user-attachments/assets/1e8ce516-1b0e-47f4-9128-e615bebadd89
 
 ## Installation
 
-1. **Quick Install**
+- **Quick Install**
 
    - Download [`multisite-exporter.zip`](https://github.com/soderlind/multisite-exporter/releases/latest/download/multisite-exporter.zip)
    - Upload via WordPress Network > Plugins > Add New > Upload Plugin
    - Network activate the plugin.
 
-2. **Composer Install**
+- **Composer Install**
 
    ```bash
    composer require soderlind/multisite-exporter
    ```
 
-3. **Updates**
+- **Updates**
    * Plugin updates are handled automatically via GitHub. No need to manually download and install updates.
 
 ## Usage
