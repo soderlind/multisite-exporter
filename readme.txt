@@ -4,7 +4,7 @@ Tags: multisite, export, background processing, action scheduler
 Requires at least: 6.3
 Tested up to: 6.8
 Requires PHP: 8.2
-Stable tag: 1.1.7
+Stable tag: 1.1.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -108,6 +108,9 @@ Yes, you can use the `multisite_exporter_directory` filter to specify a custom d
 
 
 == Changelog ==
+
+= 1.1.8 =
+* Fixed: Only show "across all pages" text when there are multiple pages of results.
 
 = 1.1.7 =
 * Improved: Conditional display of pagination text for selected exports: now shows "across all pages" only when there is more than one page of results

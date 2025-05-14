@@ -199,56 +199,41 @@ $exports = array_slice( $all_exports, $offset, $per_page );
 					<a href="#" class="button"
 						id="deselect-all"><?php esc_html_e( 'Deselect All', 'multisite-exporter' ); ?></a>
 				</div>
-
-				<div id="select-all-pages-notice" class="alignleft hidden"
-					style="margin-left: 10px; padding: 5px; background-color: #f7f7f7; border: 1px solid #ccc; display: none;">
-					<span>
-						<?php
-						printf(
-							/* translators: %1$d: Number of items on current page, %2$d: Total number of items */
-							esc_html__( 'All %1$d exports on this page are selected. ', 'multisite-exporter' ),
-							count( $exports )
-						);
-						?>
-					</span>
-					<a href="#" id="select-across-pages">
-						<?php
-						if ( $total_pages > 1 ) {
+				<?php if ( $total_pages > 1 ) : ?>
+					<div id="select-all-pages-notice" class="alignleft hidden"
+						style="margin-left: 10px; padding: 5px; background-color: #f7f7f7; border: 1px solid #ccc; display: none;">
+						<span>
+							<?php
+							printf(
+								/* translators: %1$d: Number of items on current page, %2$d: Total number of items */
+								esc_html__( 'All %1$d exports on this page are selected. ', 'multisite-exporter' ),
+								count( $exports )
+							);
+							?>
+						</span>
+						<a href="#" id="select-across-pages">
+							<?php
 							printf(
 								/* translators: %d: Total number of items */
 								esc_html__( 'Select all %d exports across all pages', 'multisite-exporter' ),
 								$total_exports
 							);
-						} else {
-							printf(
-								/* translators: %d: Total number of items */
-								esc_html__( 'Select all %d exports', 'multisite-exporter' ),
-								$total_exports
-							);
-						}
-						?>
-					</a>
-				</div>
+							?>
+						</a>
+					</div>
 
-				<div id="all-selected-notice" class="alignleft hidden"
-					style="margin-left: 10px; padding: 5px; background-color: #f7f7f7; border: 1px solid #ccc; display: none;">
-					<?php
-					if ( $total_pages > 1 ) {
+					<div id="all-selected-notice" class="alignleft hidden"
+						style="margin-left: 10px; padding: 5px; background-color: #f7f7f7; border: 1px solid #ccc; display: none;">
+						<?php
 						printf(
 							/* translators: %d: Total number of items */
 							esc_html__( 'All %d exports across all pages are selected. ', 'multisite-exporter' ),
 							$total_exports
 						);
-					} else {
-						printf(
-							/* translators: %d: Total number of items */
-							esc_html__( 'All %d exports are selected. ', 'multisite-exporter' ),
-							$total_exports
-						);
-					}
-					?>
-					<a href="#" id="clear-selection"><?php esc_html_e( 'Clear selection', 'multisite-exporter' ); ?></a>
-				</div>
+						?>
+						<a href="#" id="clear-selection"><?php esc_html_e( 'Clear selection', 'multisite-exporter' ); ?></a>
+					</div>
+				<?php endif; ?>
 
 				<?php if ( $total_pages > 1 ) : ?>
 					<?php me_output_pagination( $current_page, $total_pages, $total_exports ); ?>
