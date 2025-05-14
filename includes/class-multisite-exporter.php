@@ -89,6 +89,11 @@ class Multisite_Exporter {
 		if ( is_admin() ) {
 			include_once MULTISITE_EXPORTER_PLUGIN_DIR . 'includes/admin/class-admin.php';
 		}
+
+		// CLI includes
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			include_once MULTISITE_EXPORTER_PLUGIN_DIR . 'includes/cli/class-cli.php';
+		}
 	}
 
 	/**
@@ -125,6 +130,11 @@ class Multisite_Exporter {
 		}
 
 		ME_Export::instance();
+
+		// Initialize CLI commands if in WP CLI context
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			ME_CLI::instance();
+		}
 	}
 
 	/**

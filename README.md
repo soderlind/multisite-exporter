@@ -41,7 +41,7 @@ https://github.com/user-attachments/assets/172e2f69-3ea1-443d-b46f-fcdc82e11db4
 
 ## Usage
 
-### Running an Export
+### Running an Export (UI Method)
 
 1. Log in to your WordPress Network Admin dashboard
 2. Navigate to MS Exporter → Multisite Exporter
@@ -52,7 +52,7 @@ https://github.com/user-attachments/assets/172e2f69-3ea1-443d-b46f-fcdc82e11db4
 4. Click "Run Export for All Subsites"
 5. Exports will be processed in the background using Action Scheduler
 
-### Accessing Export Files
+### Accessing Export Files (UI Method)
 
 1. Navigate to MS Exporter → Exports
 2. View a list of all completed exports from all subsites
@@ -60,6 +60,50 @@ https://github.com/user-attachments/assets/172e2f69-3ea1-443d-b46f-fcdc82e11db4
    - Click the "Download" button next to an individual export
    - Select multiple exports using checkboxes and click "Download Selected" to get a zip file
    - Use "Select All" and "Download Selected" to download all exports at once in a zip file.
+   
+### WP CLI Method
+
+The plugin includes a WP CLI command to export content directly from the command line.
+
+#### Basic Export (All Sites, All Content)
+
+```
+wp multisite-exporter export
+```
+
+This will export all content from all sites in your multisite network.
+
+#### Exporting Specific Content Types
+
+```
+wp multisite-exporter export --content=posts,pages
+```
+
+Valid content types are: all, posts, pages, media
+
+#### Exporting Specific Sites
+
+```
+wp multisite-exporter export --site_ids=1,2,3
+```
+
+This will export only the sites with the specified IDs.
+
+#### Filtering by Date Range
+
+```
+wp multisite-exporter export --start_date=2023-01-01 --end_date=2023-12-31
+```
+
+#### Full Example
+
+```
+wp multisite-exporter export --site_ids=1,2,3 --content=posts,pages --start_date=2023-01-01
+```
+
+The command will display a progress bar during export. When completed:
+- For a single site, the export file will be saved in your current directory
+- For multiple sites, a zip file containing all exports will be created in your current directory
 
 ## How Action Scheduler Works
 
