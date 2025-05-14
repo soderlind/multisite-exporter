@@ -6,7 +6,9 @@
 		"wordpress",
 		"plugin",
 		"multisite",
-		"exporter"
+		"exporter",
+		"wp-cli",
+		"wp-cli-package"
 	],
 	"license": "GPL-2.0-or-later",
 	"authors": [
@@ -30,5 +32,16 @@
 		"files": [
 			"multisite-exporter.php"
 		]
+	},
+	"extra": {
+		"commands": [
+			"multisite-exporter"
+		],
+		"bundled": false,
+		"wp-cli": {
+			"require-wp": true,
+			"require-wp-multisite": true,
+			"command": "multisite-exporter"
+		}
 	}
 }
