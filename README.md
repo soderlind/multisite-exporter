@@ -9,7 +9,7 @@ https://github.com/user-attachments/assets/1e8ce516-1b0e-47f4-9128-e615bebadd89
 
 ## Features
 
-- Export content from all subsites in a WordPress multisite network
+- Export content from all subsites in a WordPress multisite network as XML (WXR) files.
 - Background processing using Action Scheduler to handle large networks efficiently
 - Filter exports by content type, post type, and date range
 - Centralized export file storage for easy access to all exports
