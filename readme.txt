@@ -1,10 +1,10 @@
 === Multisite Exporter ===
 Contributors: persoderlind
-Tags: multisite, export, background processing, action scheduler
+Tags: multisite, export, background processing, action scheduler, wp-cli
 Requires at least: 6.3
 Tested up to: 6.8
 Requires PHP: 8.2
-Stable tag: 1.1.8
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -43,7 +43,7 @@ Multisite Exporter is a powerful tool for WordPress multisite administrators who
 
 == Usage ==
 
-= Running an Export =
+= Running an Export (UI Method) =
 
 1. Navigate to MS Exporter → Multisite Exporter in your Network Admin dashboard
 2. Configure your export settings:
@@ -53,7 +53,7 @@ Multisite Exporter is a powerful tool for WordPress multisite administrators who
 3. Click "Run Export for All Subsites"
 4. Exports will be processed in the background using Action Scheduler
 
-= Accessing Export Files =
+= Accessing Export Files (UI Method) =
 
 1. Navigate to MS Exporter → Export History
 2. View a list of all completed exports from all subsites
@@ -61,6 +61,21 @@ Multisite Exporter is a powerful tool for WordPress multisite administrators who
    * Click the "Download" button next to an individual export
    * Select multiple exports using checkboxes and click "Download Selected" to get a zip file
    * Use "Select All" and "Download Selected" to download all exports at once
+
+= Using WP CLI Commands =
+
+The plugin includes a WP CLI command to export content directly from the command line:
+
+`wp multisite-exporter export [--site_ids=<ids>] [--content=<content_types>] [--start_date=<date>] [--end_date=<date>]`
+
+Examples:
+
+* Export all content from all sites: `wp multisite-exporter export`
+* Export specific content types: `wp multisite-exporter export --content=posts,pages`
+* Export from specific sites: `wp multisite-exporter export --site_ids=1,2,3`
+* Export with date filtering: `wp multisite-exporter export --start_date=2023-01-01`
+
+The export file(s) will be saved in your current working directory.
 
 = Customizing Export Directory =
 
@@ -108,6 +123,14 @@ Yes, you can use the `multisite_exporter_directory` filter to specify a custom d
 
 
 == Changelog ==
+
+= 1.2.0 =
+* Added: WP CLI command for exporting content from multisite installations
+* Added: Command line progress bar during export
+* Added: Export content filtering by post types (posts, pages, media)
+* Added: Option to select specific site IDs for export
+* Added: Automatic creation of zip file when exporting multiple sites
+* Enhanced: Updated documentation with detailed WP CLI usage examples
 
 = 1.1.8 =
 * Fixed: Only show "across all pages" text when there are multiple pages of results.
@@ -186,6 +209,9 @@ Yes, you can use the `multisite_exporter_directory` filter to specify a custom d
 * Full internationalization support with POT file
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+Added WP CLI command for exporting content directly from the command line with progress bar.
 
 = 1.1.7 =
 Added export status tracking with real-time progress indicators and automatic redirects when exports complete.
