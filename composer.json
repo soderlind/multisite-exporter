@@ -2,6 +2,12 @@
 	"name": "soderlind/multisite-exporter",
 	"description": "Runs WordPress Exporter on each subsite in a multisite, in the background.",
 	"type": "wordpress-plugin",
+	"keywords": [
+		"wordpress",
+		"plugin",
+		"multisite",
+		"exporter"
+	],
 	"license": "GPL-2.0-or-later",
 	"authors": [
 		{
@@ -19,5 +25,10 @@
 		"allow-plugins": {
 			"composer/installers": true
 		}
+	},
+	"autoload": {
+		"files": [
+			"multisite-exporter.php"
+		]
 	}
 }
