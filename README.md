@@ -1,6 +1,5 @@
 # Multisite Exporter
-
-Multisite Exporter is a WordPress plugin that allows you to export content from all subsites in a WordPress multisite installation. The plugin runs the WordPress exporter on each subsite in the background using the Action Scheduler library, making it efficient even for large multisite networks.
+Multisite Exporter is a WordPress plugin that allows you to export content from all subsites in a WordPress multisite installation. The plugin generates WordPress XML (WXR) files by running the WordPress exporter on each subsite in the background using the Action Scheduler library, making it efficient even for large multisite networks.
 
 
 
