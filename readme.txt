@@ -4,7 +4,7 @@ Tags: multisite, export, background processing, action scheduler, wp-cli
 Requires at least: 6.3
 Tested up to: 6.8
 Requires PHP: 8.2
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -123,6 +123,9 @@ Yes, you can use the `multisite_exporter_directory` filter to specify a custom d
 
 
 == Changelog ==
+
+= 1.2.2 =
+* Added: Support for installing WP-CLI commands as a package with `wp package install`
 
 = 1.2.1 =
 * Fixed: Minor version update
