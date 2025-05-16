@@ -66,6 +66,10 @@ https://github.com/user-attachments/assets/172e2f69-3ea1-443d-b46f-fcdc82e11db4
 
 The plugin includes a WP CLI command to export content directly from the command line.
 
+
+https://github.com/user-attachments/assets/665a7ea2-f8b8-4300-9d22-56d310cc111a
+
+
 #### Basic Export (All Sites, All Content)
 
 ```
