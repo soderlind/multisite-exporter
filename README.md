@@ -53,6 +53,8 @@ https://github.com/user-attachments/assets/172e2f69-3ea1-443d-b46f-fcdc82e11db4
 4. Click "Run Export for All Subsites"
 5. Exports will be processed in the background using Action Scheduler
 
+![Running an Export](assets/screenshot-1.png)
+
 ### Accessing Export Files (UI Method)
 
 1. Navigate to MS Exporter → Exports
@@ -61,7 +63,9 @@ https://github.com/user-attachments/assets/172e2f69-3ea1-443d-b46f-fcdc82e11db4
    - Click the "Download" button next to an individual export
    - Select multiple exports using checkboxes and click "Download Selected" to get a zip file
    - Use "Select All" and "Download Selected" to download all exports at once in a zip file.
-   
+
+![Accessing Export Files](assets/screenshot-2.png)
+
 ### WP CLI Method
 
 The plugin includes a WP CLI command to export content directly from the command line.

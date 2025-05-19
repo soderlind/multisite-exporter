@@ -90,6 +90,11 @@ function my_custom_export_directory( $default_export_dir ) {
 }
 `
 
+== Screenshots ==
+
+1. Running an Export
+2. Accessing Export Files
+
 == Frequently Asked Questions ==
 
 = Where are the export files stored? =
