@@ -21,7 +21,7 @@ https://github.com/user-attachments/assets/172e2f69-3ea1-443d-b46f-fcdc82e11db4
 
 - WordPress Multisite installation
 - PHP 8.2 or higher
-- Action Scheduler library (included with the plugin)
+- [Action Scheduler](https://actionscheduler.org/) library (included with the plugin)
 
 ## Installation
 
