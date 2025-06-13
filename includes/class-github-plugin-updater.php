@@ -10,6 +10,7 @@ use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
  * using the plugin-update-checker library.
  * 
  * @package Soderlind\WordPress
+ * @link https://github.com/soderlind/wordpress-plugin-gitHub-updater
  * @version 1.0.0
  * @author Per Soderlind
  * @license GPL-2.0+
