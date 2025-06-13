@@ -54,7 +54,13 @@ class Multisite_Exporter {
 	 */
 	public function __construct() {
 		$this->includes();
-		$this->setup_updater();
+		\Soderlind\WordPress\GitHub_Plugin_Updater::create_with_assets(
+			$this->github_url,
+			MULTISITE_EXPORTER_PLUGIN_FILE,
+			'multisite-exporter',
+			'/multisite-exporter\.zip/',
+			'main'
+		);
 
 		// Check if we're running in a multisite environment
 		if ( ! is_multisite() ) {
@@ -94,20 +100,6 @@ class Multisite_Exporter {
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			include_once MULTISITE_EXPORTER_PLUGIN_DIR . 'includes/cli/class-cli.php';
 		}
-	}
-
-	/**
-	 * Set up the update checker using GitHub integration
-	 */
-	public function setup_updater() {
-		$update_checker = PucFactory::buildUpdateChecker(
-			$this->github_url,
-			MULTISITE_EXPORTER_PLUGIN_FILE,
-			'multisite-exporter'
-		);
-
-		$update_checker->setBranch( 'main' );
-		$update_checker->getVcsApi()->enableReleaseAssets( '/multisite-exporter\.zip/' );
 	}
 
 	/**
