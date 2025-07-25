@@ -38,7 +38,7 @@ https://github.com/user-attachments/assets/172e2f69-3ea1-443d-b46f-fcdc82e11db4
    ```
 
 - **Updates**
-   * Plugin updates are handled automatically via GitHub. No need to manually download and install updates.
+   * Plugin [updates are handled automatically](https://github.com/soderlind/wordpress-plugin-github-updater?tab=readme-ov-file) via GitHub. No need to manually download and install updates.
 
 ## Usage
 
